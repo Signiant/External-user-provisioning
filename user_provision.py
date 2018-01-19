@@ -48,7 +48,7 @@ def main():
             else:
                 print(requested_plugin+' is not a valid plugin')
         plugin_handle = plugin.loadPlugin('bitbucket')
-        plugin_handle.inviteUser()
+        plugin_handle.inviteUser(configMap)
 
     # inviteUser(email,PaperTrailUserToken)
     # deleteUser(email,PaperTrailUserToken)

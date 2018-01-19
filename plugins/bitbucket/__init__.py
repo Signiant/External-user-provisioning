@@ -17,8 +17,28 @@ import json
 import requests
 
 
-def inviteUser():
-     #users = requests.put("https://api.bitbucket.org/1.0/users/signiant/invitations/test@signiant.com/signiant/developers")
-     users = requests.get("https://api.bitbucket.org/1.0/users/signiant/invitations/test@signiant.com/signiant/developers")
+def getKey(configMap):
+     for config_key in configMap['plugins']:
+          if config_key['name'] == 'bitbucket':
+               key = config_key['keySecret']
+               print(key)
 
-     print(users.status_code)
+
+def inviteUser(configMap):
+     #users = requests.put("https://api.bitbucket.org/1.0/emails/elaroche@signiant.com", header=)
+     #users = requests.get("https://api.bitbucket.org/1.0/users/signiant/invitations/test@signiant.com/signiant/developers")
+
+     #users= requests.get("https://api.bitbucket.org/1.0/groups/ericlaroche2/", )
+
+
+     #get group members
+     #users=requests.put("https://api.bitbucket.org/1.0/groups"
+     #             ,data={'accountname': 'signiant', 'group_slug': 'developers'},user=user)
+
+     getKey(configMap)
+
+     #users= requests.post()
+   #  print(users.status_code)
+
+     #$ curl -r PUT --header "Content-Length: 0" -u user:pass https://api.bitbucket.org/1.0/emails/rap@atlassian.com
+

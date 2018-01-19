@@ -3,6 +3,7 @@ import imp,os
 pluginFolder = "./plugins"
 mainFile = "__init__"
 
+
 def getAllPlugins():
     plugins = []
     possibleplugins = os.listdir(pluginFolder)
