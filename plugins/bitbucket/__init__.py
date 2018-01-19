@@ -15,30 +15,34 @@
 
 import json
 import requests
+import datetime
 
+def getDate():
+    return datetime.datetime.now()
 
 def getKey(configMap):
      for config_key in configMap['plugins']:
           if config_key['name'] == 'bitbucket':
-               key = config_key['keySecret']
-               print(key)
+               return  config_key['key']
+
+def getSecret(configMap):
+     for config_key in configMap['plugins']:
+          if config_key['name'] == 'bitbucket':
+               return config_key['secret']
 
 
-def inviteUser(configMap):
-     #users = requests.put("https://api.bitbucket.org/1.0/emails/elaroche@signiant.com", header=)
-     #users = requests.get("https://api.bitbucket.org/1.0/users/signiant/invitations/test@signiant.com/signiant/developers")
+def inviteUser(email,configMap):
 
-     #users= requests.get("https://api.bitbucket.org/1.0/groups/ericlaroche2/", )
+     #Get Authorization token
+     # data = {'grant_type': 'client_credentials'}
+     # credential = requests.post("https://bitbucket.org/site/oauth2/access_token", auth=(getKey(configMap),getSecret(configMap)), data=data)
+     # my_json = credential.content.decode('utf8')
+     # data = json.loads(my_json)
+     # access_token=data.get('access_token')
+     # print(credential.status_code)
+     #
+     #
+     # invGroup= requests.put("https://api.bitbucket.org/1.0/users/signiant/invitations/"+email+"/signiant/developers"+"?access_token="+access_token)
+     # print(invGroup.status_code)
 
-
-     #get group members
-     #users=requests.put("https://api.bitbucket.org/1.0/groups"
-     #             ,data={'accountname': 'signiant', 'group_slug': 'developers'},user=user)
-
-     getKey(configMap)
-
-     #users= requests.post()
-   #  print(users.status_code)
-
-     #$ curl -r PUT --header "Content-Length: 0" -u user:pass https://api.bitbucket.org/1.0/emails/rap@atlassian.com
-
+     return(getDate().strftime("%Y-%m-%d %H:%M")+" | User invited to Bitbucket. \n")
