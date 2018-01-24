@@ -15,7 +15,7 @@
 
 import json
 import requests
-import datetime
+import datetime,getpass
 
 def getDate():
     return datetime.datetime.now()
@@ -41,8 +41,34 @@ def inviteUser(email,configMap):
      # access_token=data.get('access_token')
      # print(credential.status_code)
      #
-     #
+     #Invite
      # invGroup= requests.put("https://api.bitbucket.org/1.0/users/signiant/invitations/"+email+"/signiant/developers"+"?access_token="+access_token)
      # print(invGroup.status_code)
 
-     return(getDate().strftime("%Y-%m-%d %H:%M")+" | User invited to Bitbucket. \n")
+     return {"Plugin name": "BitBucket",
+             "Log": (email[:-13]+" "+getpass.getuser()+" "+getDate().strftime("%Y-%m-%d %H:%M")+" | BitBucket: Email invite sent. \n"),
+             "Instruction":"Look for email invite from BitBucket"}
+
+def removeUser(email,configMap):
+     #Get Authorization token
+     data = {'grant_type': 'client_credentials'}
+     credential = requests.post("https://bitbucket.org/site/oauth2/access_token", auth=(getKey(configMap),getSecret(configMap)), data=data)
+     my_json = credential.content.decode('utf8')
+     data = json.loads(my_json)
+     access_token=data.get('access_token')
+     print(credential.status_code)
+
+     #Remove from groups
+     # delMem= requests.delete("https://api.bitbucket.org/1.0/groups/signiant/developers/members/"+email+"?access_token="+access_token)
+     # print(delMem.status_code)
+     # delMem = requests.delete(
+     #      "https://api.bitbucket.org/1.0/groups/signiant/administrators/members/"+email+ "?access_token=" + access_token)
+     # print(delMem.status_code)
+     # delMem = requests.delete(
+     #      "https://api.bitbucket.org/1.0/groups/signiant/documentation/members/"+email+"?access_token=" + access_token)
+     # print(delMem.status_code)
+
+     return {"Plugin name": "BitBucket",
+             "Log": (email[:-13]+" "+getpass.getuser() + " " + getDate().strftime(
+                  "%Y-%m-%d %H:%M") + " | BitBucket: User removed from signiant team. \n"),
+             "Instruction": "User removed from signiant team."}

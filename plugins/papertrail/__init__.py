@@ -3,7 +3,7 @@
 # Make a get request to get the latest position of the international space station from the opennotify api.
 import requests
 import json
-import datetime
+import datetime,getpass
 
 def getDate():
     return datetime.datetime.now()
@@ -13,12 +13,11 @@ def getApiToken(configMap):
         if apiToken['name'] == 'papertrail':
             return apiToken['PapertrailApiToken']
 
-
 def inviteUser(email,configMap):
     rights = {'user[email]': email,'user[read_only]': 1,'user[purge_logs]': 0}
     # Send invite to user
     users = requests.post("https://papertrailapp.com/api/v1/users/invite.json",headers={'X-Papertrail-Token': getApiToken(configMap)}, data=rights)
-    return (getDate().strftime("%Y-%m-%d %H:%M") +' | User succesfully invited to PaperTrail.\n')
+    return (email[:-13]+" "+getDate().strftime("%Y-%m-%d %H:%M") +' | User succesfully invited to PaperTrail.\n')
 
 def deleteUser(email,configMap):
     #get id of user
@@ -36,13 +35,16 @@ def deleteUser(email,configMap):
         if users.status_code==200:
             print('User successfully deleted.')
     except (UnboundLocalError):
-        return (getDate().strftime("%Y-%m-%d %H:%M") +' | User does not exist, invite failed.\n')
+        return (email[:-13]+" "+getDate().strftime("%Y-%m-%d %H:%M") +' | User does not exist, invite failed.\n')
 
-def listUsers(configMap):
+def listUsers(email, configMap):
     users = requests.get("https://papertrailapp.com/api/v1/users.json", headers={'X-Papertrail-Token': getApiToken(configMap)})
     my_json = users.content.decode('utf8')
     data = json.loads(my_json)
     #for element in data:
        #print (element['email'])
        #print (element['id'])
-    return(getDate().strftime("%Y-%m-%d %H:%M")+" | Listed Papertrail users. \n")
+
+    return {"Plugin name": "PaperTrail",
+             "Log": email[:-13]+" "+(getpass.getuser()+" "+getDate().strftime("%Y-%m-%d %H:%M")+" | Papertrail: Listed users.\n"),
+             "Instruction":"Look for email invite from PaperTrail"}

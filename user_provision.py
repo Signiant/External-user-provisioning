@@ -2,7 +2,9 @@ import argparse
 import os
 import sys
 import yaml
+import boto3
 import plugin
+
 
 def readConfigFile(path):
     configMap = []
@@ -17,7 +19,6 @@ def readConfigFile(path):
 
     return configMap
 
-
     # current params
     #-c "/Users/elaroche/PycharmProjects/External-user-provisioning-new/config-file/config.yaml"
     #-p papertrail,hello,bitbucket
@@ -27,10 +28,23 @@ def main():
     if os.path.isfile('log.txt'):
         print("file already exists")
         log= open('log.txt','a')
-        log.write('--------------------------\n')
+        log.write('------------------------------\n')
     else:
         print('creating file')
         log = open("log.txt", "w+")
+
+    client = boto3.client('iam')
+    response = client.create_user(
+        UserName='test_signiant'
+    )
+    print (response)
+    # session = boto3.client(
+    #     'iam'
+    # )
+    # paginator = session.get_paginator('list_users')
+    # for response in paginator.paginate():
+    #     print(response)
+
 
     #Command Line
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -41,32 +55,55 @@ def main():
     print(args)
     plugins=[x.strip() for x in args.plugin.split(',')]
 
-    #load Config file
-    fpath = os.path.dirname(__file__)
+    # load Config file
     configMap = readConfigFile(args.config)
-    email=configMap['global']['newUser']
-    pluginsarr=configMap['plugins']
+    if plugins[0]=="all":
+        plugins.pop()
+        for config_plugin in configMap['plugins']:
+            plugins.append(config_plugin['name'])
 
+    email=configMap['global']['newUser']
+    validPlugins=[]
+    print(email)
     #run required plugins
     for config_plugin in configMap['plugins']:#loop plugins
         plugin_name = config_plugin['name']
         for requested_plugin in plugins: #loop args
             if plugin_name==requested_plugin: # check if args is valid
                 print("Loading plugin: %s  " % plugin_name)
-                if plugin_name=='papertrail':
-                    plugin_handle = plugin.loadPlugin(plugin_name)
-                    log.write(  plugin_handle.listUsers(configMap))
-                elif plugin_name=='bitbucket':
-                    plugin_handle = plugin.loadPlugin(plugin_name)
-                    log.write( plugin_handle.inviteUser(email, configMap))
+                # if plugin_name=='papertrail': ###MAKE ALL METHOD NAMES THE SAME, then create new method
+                #     plugin_handle = plugin.loadPlugin(plugin_name) #listUsers
+                #     json =(plugin_handle.listUsers(email, configMap))
+                #     validPlugins.append(json)
+                #     log.write(json['Log'])
+           #      elif plugin_name=='bitbucket':#removing from all groups
+           #          plugin_handle = plugin.loadPlugin(plugin_name)
+           #          json =(plugin_handle.removeUser(email, configMap))
+           #          validPlugins.append(json)
+           #          log.write(json['Log'])
+           #      elif plugin_name == 'slack': #returns link only
+           #          plugin_handle = plugin.loadPlugin(plugin_name)
+           #          json=(plugin_handle.deleteUser(email,configMap))
+           #          validPlugins.append(json)
+           #          log.write(json['Log'])
+           #      elif plugin_name == 'artifactory': #returns link only
+           #          plugin_handle = plugin.loadPlugin(plugin_name)
+           #          json = (plugin_handle.send_email_invite(email, configMap))
+           #          validPlugins.append(json)
+           #          log.write(json['Log'])
 
-            #else:
-                #print(requested_plugin+' is not a valid plugin for: '+plugin_name)
+    #mail.emailOutput(configMap,validPlugins)
 
 
     # inviteUser(email,PaperTrailUserToken)
     # deleteUser(email,PaperTrailUserToken)
     #listUsers(email, PaperTrailUserToken)bcvd
+
+
+    #team-cost-reporter, output.outputresults,
+
+
+
     log.close()
 
 if __name__ == "__main__":
