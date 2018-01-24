@@ -10,7 +10,7 @@ from lxml.etree import tostring
 
 path = os.path.dirname(__file__)
 
-def emailOutput(configMap,validPlugins):
+def emailOutput(email, configMap, validPlugins):
 
     # Get the SMTP config
     smtp_server = configMap['global']['smtp']['server']
@@ -24,12 +24,11 @@ def emailOutput(configMap,validPlugins):
 
 
     email_template_file = configMap['global']['smtp']['template']
-    email_to_addr = "elaroche@signiant.com"
+    email_to_addr = email
    # email_subject = "Team %s AWS Cost Report for %s to %s" % (team_name,getStartDate(configMap),getEndDate(configMap))
     email_subject= "Signup to your Signiant accounts"
 
 
-#possibly insert whole html row
     #for loop here
     values = {}
     for plugin in validPlugins:
@@ -42,7 +41,7 @@ def emailOutput(configMap,validPlugins):
 
     msg = MailMessage(from_email=smtp_from, to_emails=[email_to_addr], cc_emails=smtp_cc,subject=email_subject,template=template)
     send(mail_msg=msg, mail_server=server)
-    print("sent succesfully?")
+    print("email sent")
 
 
 # author Dave North
@@ -65,7 +64,7 @@ class EmailTemplate():
 
     def render(self):
         content = open(path +"/" + self.template_name).read()
-        print(len(self.values))
+        #print(len(self.values))
       #  for k,v in self.values.items():
          #   content = content.replace('[%s]' % k,v)
 
@@ -74,7 +73,7 @@ class EmailTemplate():
             contentnav = tree.find(".//table[@id='main']")
             contentnav.append(ET.XML("<tr><td style='padding: 4px 4px 4px 4px;'><b>"+k+"</b></td><td style='padding: 4px 4px 4px 4px;'>"+v+"</td></tr>"))
             content=tostring(contentnav, encoding="unicode", method="html")
-            print(ET.tostring(tree))
+            #print(ET.tostring(tree))
        # content = open(path + "/" + self.template_name, 'w+')
         #content=contentnav
         return content

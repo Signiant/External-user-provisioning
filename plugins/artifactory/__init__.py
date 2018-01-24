@@ -1,13 +1,13 @@
 #return url and message
-import datetime
-import getpass
+import user_provision
 
-def getDate():
-    return datetime.datetime.now()
+def removeUser(email,configMap):
+    pass
 
-def send_email_invite(email,configMap):
-    for link in configMap['plugins']:
-        if link['name'] == 'artifactory':
-            return {"Plugin name": "Artifactory",
-                    "Log": (email[:-13]+" "+getpass.getuser()+" "+getDate().strftime("%Y-%m-%d %H:%M") + " | Artifactory: Instruction sent in email.\n"),
-                    "Instruction": "Follow link to activate your account: https://signiant.atlassian.net/wiki/spaces/DevOps/pages/436082/NPM+setup+for+Signiant+s+Artifactory+Online+Repository "}
+#instruct user to join using AD credentials
+def inviteUser(email,configMap):
+    plugin = "Artifactory"
+    log = 'Artifactory: Instruction sent in email.\n'
+    instruction = 'Follow link to activate your account using your AD username and Password: https://signiant.atlassian.net/wiki/spaces/DevOps/pages/436082/NPM+setup+for+Signiant+s+Artifactory+Online+Repository '
+    return user_provision.getJsonResponse(plugin, email, log, instruction)
+

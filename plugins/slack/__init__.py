@@ -1,27 +1,20 @@
-#return url and message
-import datetime
-import getpass
 import json
-
 import requests
-
+import user_provision
 
 def getApiToken(configMap):
     for apiToken in configMap['plugins']:
         if apiToken['name'] == 'slack':
             return apiToken['ApiToken']
 
-def getDate():
-    return datetime.datetime.now()
 
-def send_email_invite(email,configMap):
-    for link in configMap['plugins']:
-        if link['name'] == 'slack':
-            return {"Plugin name": "Slack",
-                    "Log": (getpass.getuser()+" "+getDate().strftime("%Y-%m-%d %H:%M") + " | Slack: Instruction sent in email.\n"),
-                    "Instruction": "Follow link to activate your account: https://signiant-dev.slack.com/signup "}
+def inviteUser(email,configMap):
+    plugin = "Slack"
+    log = 'Slack: Instruction sent in email.\n'
+    instruction = 'Follow link to activate your account using your AD username and password: https://signiant-dev.slack.com/signup '
+    return user_provision.getJsonResponse(plugin, email, log, instruction)
 
-def deleteUser(email,configMap): #removes user as a member of dev-signiant
+def removeUser(email,configMap): #removes user as a member of dev-signiant
 
     #get team id
     team = requests.get("https://slack.com/api/team.info?token=" + getApiToken(configMap) )
@@ -36,9 +29,9 @@ def deleteUser(email,configMap): #removes user as a member of dev-signiant
     slackUserID = data['user_id']
 
     #disable user
-   # user = requests.post("https://slack.com/api/users.admin.setInactive" + "?token=" + getApiToken(configMap) + "&user="+slackUserID)
+    user = requests.post("https://slack.com/api/users.admin.setInactive" + "?token=" + getApiToken(configMap) + "&user="+slackUserID)
 
-    return {"Plugin name": "Slack",
-            "Log": (getpass.getuser() + " " + getDate().strftime(
-                "%Y-%m-%d %H:%M") + " | Slack: User removed from dev-signiant\n"),
-            "Instruction": "User removed from dev-signiant"}
+    plugin = "Slack"
+    log = 'Slack: User removed from Slack dev-signiant.\n'
+    instruction = 'User removed from Slack dev-signiant."  '
+    return user_provision.getJsonResponse(plugin, email, log, instruction)
