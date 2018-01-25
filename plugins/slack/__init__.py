@@ -15,6 +15,9 @@ def inviteUser(email,configMap):
     return user_provision.getJsonResponse(plugin, email, log, instruction)
 
 def removeUser(email,configMap): #removes user as a member of dev-signiant
+    plugin = "Slack"
+    log = 'Slack: User removed from Slack dev-signiant.\n'
+    instruction = 'User removed from Slack dev-signiant.'
 
     #get team id
     team = requests.get("https://slack.com/api/team.info?token=" + getApiToken(configMap) )
@@ -22,16 +25,19 @@ def removeUser(email,configMap): #removes user as a member of dev-signiant
     data = json.loads(my_json)
     teamId=data['team']['id']
 
-    #get user id
-    userId= requests.get(	"https://slack.com/api/auth.findUser?token=" + getApiToken(configMap)+"&email="+email+"&team="+teamId )
-    my_json = userId.content.decode('utf8')
-    data = json.loads(my_json)
-    slackUserID = data['user_id']
+    try:
+        #get user id
+        userId= requests.get(	"https://slack.com/api/auth.findUser?token=" + getApiToken(configMap)+"&email="+email+"&team="+teamId )
+        my_json = userId.content.decode('utf8')
+        data = json.loads(my_json)
+        slackUserID = data['user_id']
 
-    #disable user
-    user = requests.post("https://slack.com/api/users.admin.setInactive" + "?token=" + getApiToken(configMap) + "&user="+slackUserID)
+        #disable user
+        user = requests.post("https://slack.com/api/users.admin.setInactive" + "?token=" + getApiToken(configMap) + "&user="+slackUserID)
+    except Exception as error:
+        print('Remove from slack error: user does never existed or is already inactive')
+        log = 'Slack: Remove from slack error: user does never existed or is already inactive\n error: '+ str(error) +'\n'
+        instruction = 'Remove from slack error: user does never existed or is already inactive. Exception caught: '+ str(error)
 
-    plugin = "Slack"
-    log = 'Slack: User removed from Slack dev-signiant.\n'
-    instruction = 'User removed from Slack dev-signiant."  '
+
     return user_provision.getJsonResponse(plugin, email, log, instruction)
