@@ -15,8 +15,17 @@ def getGroups(configMap):
                 groupsList.append(group['group'])
     return groupsList
 
-def inviteUser(email, configMap):
+def inviteUser(email, configMap,allPermissions,groups):
     username = email[:-13]
+
+    cli_groups = []
+    for plugin_groups in groups:
+        group = [x.strip() for x in plugin_groups.split(':')]
+        if group[0] == 'aws-dev2':
+            cli_groups = [x.strip() for x in group[1].split(',')]
+            break
+    if len(cli_groups) == 0:
+        cli_groups = getGroups(configMap)
 
     for key in configMap['plugins']:
         if  key['name']=='aws-dev2':
@@ -28,7 +37,7 @@ def inviteUser(email, configMap):
         aws_access_key_id=Dev2ID,
         aws_secret_access_key=Dev2Secret
     )
-    createUser(username,client,configMap)
+    createUser(username,client,configMap,cli_groups)
 
     plugin = "AWS-dev2"
     log = 'AWS-dev2: ' + username + ' added to aws DEV2.\n'
@@ -53,16 +62,15 @@ def removeUser(email, configMap):
         aws_secret_access_key=Dev2Secret
     )
     deleteUser(username,client)
-    plugin = "AWS"
-    log = 'AWS: ' + username + ' removed from signiant aws dev 2.\n'
-    instruction = username + 'has been removed from signiantdev2 on aws  '
+    plugin = "AWS-dev2"
+    log = 'AWS-dev2: ' + username + ' removed from signiant aws dev 2.\n'
+    instruction = username + ' has been removed from signiantdev2 on aws  '
     return user_provision.getJsonResponse(plugin, email, log, instruction)
 
-def createUser(username, client,configMap):
+def createUser(username, client,configMap,cli_groups):
     response = client.create_user(UserName=username)
 
-    groups = getGroups(configMap)
-    for group in groups:
+    for group in cli_groups:
         response = client.add_user_to_group(
             GroupName=group,
             UserName=username

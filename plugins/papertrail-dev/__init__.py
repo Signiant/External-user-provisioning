@@ -21,24 +21,32 @@ def getRights(configMap):
             return apiToken['permission']
 
 # Send papertrail email invite to user
-def inviteUser(email,configMap):
+def inviteUser(email,configMap,allPermissions,groups):
+    rights = getRights(configMap)
+    rights['user[email]'] = email
 
-    #rights = {'user[email]': email,'user[read_only]': 1,'user[manage_members]':0, 'user[manage_billing]':0,'user[purge_logs]': 0,}
-    rights=getRights(configMap)
-    rights['user[email]']=email
+    for permission in allPermissions:
+        permission=ast.literal_eval(permission)
+        if permission['plugin']=='papertrail-dev':
+            del permission['plugin']
+            rights=permission
+
     users = requests.post(getUrl(configMap)+"/invite.json",headers={'X-Papertrail-Token': getDevApiToken(configMap)}, data=rights)
 
     plugin = "PaperTrail-dev"
     log = 'PaperTrail-dev: Email invite from papertrail sent.\n'
     instruction = 'Look for email invite from PaperTrail Dev '
     if users.status_code!=200:
-        log='PaperTrail-dev error: '+str(users.status_code)+str(users.content)+'\n'
+        log='PaperTrail-dev error: '+str(users.status_code)+str(users.content)+' Make sure if email doesn\'t exist already.\n'
         instruction=log
         print(log)
     return user_provision.getJsonResponse(plugin, email, log, instruction)
 
 def removeUser(email,configMap):
     #get id of user, Dev
+    plugin = "PaperTrail-dev"
+    log = 'PaperTrail-dev: User removed from papertrail.\n'
+    instruction = 'User removed from papertrail-dev.'
 
     users = requests.get(getUrl(configMap)+".json",
                          headers={'X-Papertrail-Token': getDevApiToken(configMap)})
@@ -52,9 +60,7 @@ def removeUser(email,configMap):
                                 headers={'X-Papertrail-Token': getDevApiToken(configMap)})
         #print(users.status_code)
     except (UnboundLocalError):
-        print (email[:-13]+" "+getDate().strftime("%Y-%m-%d %H:%M") +' | User does not exist, invite failed.\n')
+        log=' User does not exist, delete failed.\n'
 
-    plugin = "PaperTrail-dev"
-    log = 'PaperTrail-dev: User removed from papertrail.\n'
-    instruction = 'User removed from papertrail-dev."  '
+
     return user_provision.getJsonResponse(plugin, email, log, instruction)

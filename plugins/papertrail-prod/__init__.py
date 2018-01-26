@@ -1,3 +1,5 @@
+import ast
+
 import requests
 import json
 import datetime
@@ -20,13 +22,17 @@ def getRights(configMap):
             return apiToken['permission']
 
 # Send papertrail email invite to user
-def inviteUser(email,configMap):
+def inviteUser(email,configMap,allPermissions,groups):
     plugin = "PaperTrail-prod"
     log = 'PaperTrail-prod: Email invite from papertrail sent.\n'
     instruction = 'Look for email invite from PaperTrail-prod'
-    #rights = {'user[email]': email, 'user[read_only]': 1, 'user[purge_logs]': 0}
     rights = getRights(configMap)
     rights['user[email]'] = email
+    for permission in allPermissions:
+        permission = ast.literal_eval(permission)
+        if permission['plugin'] == 'papertrail-dev':
+            del permission['plugin']
+            rights = permission
     users = requests.post(getUrl(configMap)+"/invite.json",
                           headers={'X-Papertrail-Token': getProdApiToken(configMap)}, data=rights)
 
@@ -37,6 +43,9 @@ def inviteUser(email,configMap):
     return user_provision.getJsonResponse(plugin, email, log, instruction)
 
 def removeUser(email,configMap):
+    plugin = "PaperTrail-prod"
+    log = 'PaperTrail-prod: User removed from papertrail-prod.\n'
+    instruction = 'User removed from papertrail-prod.  '
 
     users = requests.get(getUrl(configMap)+".json",
                          headers={'X-Papertrail-Token': getProdApiToken(configMap)})
@@ -50,11 +59,9 @@ def removeUser(email,configMap):
                                 headers={'X-Papertrail-Token': getProdApiToken(configMap)})
         #print(users.status_code)
     except (UnboundLocalError):
-        print (email[:-13] + " " + getDate().strftime("%Y-%m-%d %H:%M") + ' | User does not exist, invite failed.\n')
+        log = ' User does not exist, delete failed.\n'
 
-    plugin = "PaperTrail-prod"
-    log = 'PaperTrail-prod: User removed from papertrail-prod.\n'
-    instruction = 'User removed from papertrail."  '
+
     return user_provision.getJsonResponse(plugin, email, log, instruction)
 
 #
