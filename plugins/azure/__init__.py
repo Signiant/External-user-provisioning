@@ -1,6 +1,4 @@
 import user_provision
-
-
 import os
 from azure.common.credentials import ServicePrincipalCredentials
 from azure.mgmt.resource import ResourceManagementClient
@@ -15,7 +13,7 @@ from azure.mgmt.resource import ResourceManagementClient
 # )
 # client = ResourceManagementClient(credentials, subscription_id)
 
-def inviteUser(email, configMap,allPermissions,groups):
+def inviteUser(email, configMap,allPermissions, plugin_tag):
     #
     # # Tenant ID for your Azure Subscription
     # TENANT_ID = 'dc3a3f5d-523f-4f85-a01d-9c1adef9010f'
@@ -35,9 +33,9 @@ def inviteUser(email, configMap,allPermissions,groups):
     # print(credentials)
 
     credentials = ServicePrincipalCredentials(
-        client_id='ABCDEFGH-1234-ABCD-1234-ABCDEFGHIJKL',
-        secret='XXXXXXXXXXXXXXXXXXXXXXXX',
-        tenant='ABCDEFGH-1234-ABCD-1234-ABCDEFGHIJKL'
+        client_id='debb7503-259c-4390-8223-1c172cfa3294',
+        secret='zDEbuarzqq3LuZhhn+MsnAVwvwOLhEKvuEWb27WWnyM=',
+        tenant='dc3a3f5d-523f-4f85-a01d-9c1adef9010f'
     )
 
     plugin = "Azure"

@@ -1,26 +1,21 @@
+import ast
 import json
 import requests
 import user_provision
+from plugin import getGroups, inviteMessage, removalMessage
+
 
 def getKey(configMap):
      for config_key in configMap['plugins']:
-          if config_key['name'] == 'bitbucket':
+          if config_key['tag'] == 'bitbucket':
                return  config_key['key']
 
 def getSecret(configMap):
      for config_key in configMap['plugins']:
-          if config_key['name'] == 'bitbucket':
+          if config_key['tag'] == 'bitbucket':
                return config_key['secret']
 
-def getGroups(configMap):
-    groupsList=[]
-    for groups in configMap['plugins']:
-        if  groups['name']=='bitbucket':
-            for group in groups['groups']:
-                groupsList.append(group['group'])
-    return groupsList
-
-def inviteUser(email,configMap,allPermissions,groups):
+def inviteUser(email,configMap,allPermissions, plugin_tag):
 
      #Get Authorization token
      data = {'grant_type': 'client_credentials'}
@@ -29,25 +24,28 @@ def inviteUser(email,configMap,allPermissions,groups):
      data = json.loads(my_json)
      access_token=data.get('access_token')
 
-     #Invite
      cli_groups = []
-     for plugin_groups in groups:
-         group = [x.strip() for x in plugin_groups.split(':')]
-         if group[0] == 'bitbucket':
-             cli_groups = [x.strip() for x in group[1].split(',')]
+     for permission in allPermissions:
+         thisPermissions = ast.literal_eval(permission)  # to dictionnary
+         if thisPermissions['plugin'] == plugin_tag:
+             del thisPermissions['plugin']
+             cli_groups = list(thisPermissions.values())
              break
+
      if len(cli_groups) == 0:
-         cli_groups = getGroups(configMap)
+         cli_groups = getGroups(configMap,plugin_tag)
+
+     # Invite
      for group in cli_groups:
          invGroup = requests.put(
              "https://api.bitbucket.org/1.0/users/signiant/invitations/" + email + "/signiant/"+group+ "?access_token=" + access_token)
 
-     plugin = "BitBucket"
-     log = 'BitBucket: Email invite sent.\n'
-     instruction = 'Look for email invite from BitBucket '
-     return user_provision.getJsonResponse(plugin, email, log, instruction)
 
-def removeUser(email,configMap):
+     log = 'BitBucket: Email invite sent.\n'
+     instruction = inviteMessage(configMap,plugin_tag)+ "Added to: " +cli_groups
+     return user_provision.getJsonResponse(plugin_tag, email, log, instruction)
+
+def removeUser(email,configMap,allPermissions, plugin_tag):
      #Get Authorization token
      data = {'grant_type': 'client_credentials'}
      credential = requests.post("https://bitbucket.org/site/oauth2/access_token", auth=(getKey(configMap),getSecret(configMap)), data=data)
@@ -56,14 +54,17 @@ def removeUser(email,configMap):
      access_token=data.get('access_token')
      print(credential.status_code)
 
-     #Remove from groups
-     delMem= requests.delete("https://api.bitbucket.org/1.0/groups/signiant/developers/members/"+email+"?access_token="+access_token)
-     delMem = requests.delete(
-          "https://api.bitbucket.org/1.0/groups/signiant/administrators/members/"+email+ "?access_token=" + access_token)
-     delMem = requests.delete(
-          "https://api.bitbucket.org/1.0/groups/signiant/documentation/members/"+email+"?access_token=" + access_token)
-     plugin = "BitBucket"
+     #get all groups
+     groups=requests.get("https://api.bitbucket.org/1.0/groups/signiant"+"?access_token="+access_token)
+     my_json=groups.content.decode('utf8')
+     data = json.loads(my_json)
+
+     # Remove from groups
+     for group in data:
+         delMem= requests.delete("https://api.bitbucket.org/1.0/groups/signiant/"+group.get('name').lower()+"/members/"+email+"?access_token="+access_token)
+         print(delMem.status_code)
+
      log = 'BitBucket: User removed from signiant team.\n'
-     instruction = 'User removed from bitbucket signiant team.  '
-     return user_provision.getJsonResponse(plugin, email, log, instruction)
+     instruction = removalMessage(configMap,plugin_tag)
+     return user_provision.getJsonResponse(plugin_tag, email, log, instruction)
 

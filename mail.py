@@ -10,7 +10,7 @@ from lxml.etree import tostring
 
 path = os.path.dirname(__file__)
 
-def emailOutput(email, configMap, validPlugins):
+def emailOutput(email, configMap, pluginInstruction):
 
     # Get the SMTP config
     smtp_server = configMap['global']['smtp']['server']
@@ -31,7 +31,7 @@ def emailOutput(email, configMap, validPlugins):
 
     #for loop here
     values = {}
-    for plugin in validPlugins:
+    for plugin in pluginInstruction:
         values[plugin['Plugin name']]=plugin['Instruction']
 
     # insert values
