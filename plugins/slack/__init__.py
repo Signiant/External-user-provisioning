@@ -17,7 +17,7 @@ def removeUser(email,configMap,allPermissions, plugin_tag): #removes user as a m
     teamId=data['team']['id']
 
     log = 'Slack: User removed from Slack dev-signiant.\n'
-    instruction = removalMessage(configMap,plugin_tag)
+    instruction = email + removalMessage(configMap,plugin_tag)
     try:
         #get user id
         userId= requests.get(	"https://slack.com/api/auth.findUser?token=" + getApiToken(configMap,plugin_tag)+"&email="+email+"&team="+teamId )
@@ -28,8 +28,7 @@ def removeUser(email,configMap,allPermissions, plugin_tag): #removes user as a m
         #disable user
         user = requests.post("https://slack.com/api/users.admin.setInactive" + "?token=" + getApiToken(configMap,plugin_tag) + "&user="+slackUserID)
     except Exception as error:
-        print('Remove from slack error: user does never existed or is already inactive')
-        log = 'Slack: Remove from slack error: user does not exist or is already inactive\n error: '+ str(error) +'\n'
-        instruction = 'Remove from slack error: user does not exist or is already inactive. Exception caught: '+ str(error)
+        log = 'Slack: Remove from slack error:'+ email+' does not exist or is already inactive\n error: '+ str(error) +'\n'
+        instruction = 'Remove from slack error:'+ email+'does not exist or is already inactive. Exception caught: '+ str(error)
 
     return user_provision.getJsonResponse(plugin_tag, email, log, instruction)

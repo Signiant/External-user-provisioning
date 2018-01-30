@@ -7,12 +7,12 @@ from plugin import getGroups, inviteMessage, removalMessage
 
 def getKey(configMap):
      for config_key in configMap['plugins']:
-          if config_key['tag'] == 'bitbucket':
+          if config_key['plugin']+':'+config_key['tag']  == 'bitbucket:prod':
                return  config_key['key']
 
 def getSecret(configMap):
      for config_key in configMap['plugins']:
-          if config_key['tag'] == 'bitbucket':
+          if config_key['plugin']+':'+config_key['tag'] == 'bitbucket:prod':
                return config_key['secret']
 
 def inviteUser(email,configMap,allPermissions, plugin_tag):
@@ -42,17 +42,18 @@ def inviteUser(email,configMap,allPermissions, plugin_tag):
 
 
      log = 'BitBucket: Email invite sent.\n'
-     instruction = inviteMessage(configMap,plugin_tag)+ "Added to: " +cli_groups
+     instruction = inviteMessage(configMap,plugin_tag)+ "Added to: " +" ".join(cli_groups)
      return user_provision.getJsonResponse(plugin_tag, email, log, instruction)
 
 def removeUser(email,configMap,allPermissions, plugin_tag):
      #Get Authorization token
+     key=getKey(configMap)
      data = {'grant_type': 'client_credentials'}
      credential = requests.post("https://bitbucket.org/site/oauth2/access_token", auth=(getKey(configMap),getSecret(configMap)), data=data)
      my_json = credential.content.decode('utf8')
      data = json.loads(my_json)
      access_token=data.get('access_token')
-     print(credential.status_code)
+     #print(credential.status_code)
 
      #get all groups
      groups=requests.get("https://api.bitbucket.org/1.0/groups/signiant"+"?access_token="+access_token)
@@ -62,9 +63,9 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
      # Remove from groups
      for group in data:
          delMem= requests.delete("https://api.bitbucket.org/1.0/groups/signiant/"+group.get('name').lower()+"/members/"+email+"?access_token="+access_token)
-         print(delMem.status_code)
+         #print(delMem.status_code)
 
-     log = 'BitBucket: User removed from signiant team.\n'
-     instruction = removalMessage(configMap,plugin_tag)
+     log = 'BitBucket: '+email+' removed from signiant team.\n'
+     instruction = email+ removalMessage(configMap,plugin_tag)
      return user_provision.getJsonResponse(plugin_tag, email, log, instruction)
 

@@ -4,8 +4,8 @@ from plugin import getUrl, inviteMessage, removalMessage
 
 
 def removeUser(email, configMap, allPermissions, plugin_tag):
-    log = 'artifactory: Removed alongside AD account \n'
-    instruction= removalMessage(configMap,plugin_tag)
+    log = 'artifactory: '+ email+' removed alongside AD account \n'
+    instruction= email+ removalMessage(configMap,plugin_tag)
     return user_provision.getJsonResponse(plugin_tag, email, log, instruction)
 
 #instruct user to join using AD credentials

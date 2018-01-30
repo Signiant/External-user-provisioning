@@ -40,14 +40,14 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
         if element['email']==email:
             id=element['id']
 
-    log = plugin_tag+': User removed from papertrail.\n'
-    instruction = removalMessage(configMap,plugin_tag)
+    log = plugin_tag+': '+email+'User removed from papertrail.\n'
+    instruction = email+ removalMessage(configMap,plugin_tag)
     try:
         users = requests.delete(getUrl(configMap, plugin_tag)+"/"+str(id)+".json",
                                 headers={'X-Papertrail-Token': getApiToken(configMap, plugin_tag)})
         #print(users.status_code)
     except (UnboundLocalError):
-        log=plugin_tag+' user does not exist, delete failed.\n'
+        log=plugin_tag+' '+ email+' does not exist, delete failed.\n'
 
 
     return user_provision.getJsonResponse(plugin_tag, email, log, instruction)

@@ -3,6 +3,7 @@ import getpass
 import os
 import sys
 import yaml
+import mail
 import plugin
 import datetime
 import logging
@@ -26,18 +27,13 @@ def getJsonResponse(plugin,email, log, instruction):
                     "Instruction": instruction}
 
 def main():
-    plugin_results = dict()
     if os.path.isfile('log.txt'):
         log= open('log.txt','a')
-        #log.write('------------------------------\n')
     else:
         print('creating file')
         log = open("log.txt", "w+")
 
-    logging.basicConfig(filename='example.log', level=logging.DEBUG)
-    logging.debug('This message should go to the log file')
-    logging.info('So should this')
-    logging.warning('And this, too')
+    logging.basicConfig(filename='example.log', level=logging.INFO)
 
     #Command Line
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -53,16 +49,16 @@ def main():
     configMap = readConfigFile(args.config)
     availablePlugins=[]
     for plugin in configMap['plugins']:
-        availablePlugins.append(plugin['tag'])
+        availablePlugins.append(plugin['plugin']+':'+plugin['tag'])
 
     #{'plugin':'aws', 'group1': 'IAMChangeMyPW_ManageMyKeys', 'group2': 'SigniantDevelopers'};{'plugin':'papertrail-dev','user[email]':'test@signiant.com','user[read_only]':1,'user[manage_members]':0,'user[manage_billing]':0,'user[purge_logs]':0};{'plugin':'papertrail-prod','user[email]':'test@signiant.com','user[read_only]':1,'user[manage_members]':0,'user[manage_billing]':0,'user[purge_logs]':0}
-
     allPermissions=[]
     if args.permission is not None:
         permissions= [x.strip() for x in args.permission.split(';')]
         for permission in permissions:
             allPermissions.append(permission)
 
+    #Get entered plugins / all plugins
     plugins=getArgPlugins(args.plugin, configMap)
     pluginsremove=getArgPlugins(args.remove,configMap)
     email=args.email
@@ -72,18 +68,21 @@ def main():
     if args.plugin is not None:
         arg='add'
         runPlugins(configMap, plugins,email,allPermissions,log, pluginInstruction,availablePlugins,arg)
+        print('sending email')
+        mail.emailOutput(email, configMap,pluginInstruction)
     if args.remove is not None:
         arg='remove'
         runPlugins(configMap, pluginsremove, email, allPermissions, log, pluginInstruction,availablePlugins,arg)
+        print('sending email')
+        email= configMap['global']['smtp']['server']
+        mail.emailOutput(email, configMap,pluginInstruction)
 
-    # print('sending email')
-    # mail.emailOutput(email, configMap,pluginInstruction)
-    log.close()
+    #log.close()
 
 def runPlugins(configMap,plugins,email,allPermissions,log, pluginInstruction,availablePlugins,arg):
 
     for config_plugin in configMap['plugins']:  # get plugin from config file
-        plugin_tag = config_plugin['tag']
+        plugin_tag = config_plugin['plugin']+':'+config_plugin['tag']
         pluginName = config_plugin['plugin']
         for requested_plugin in plugins:  # get the args plugin that you want to run
             if plugin_tag == requested_plugin:  # check if args is valid
@@ -107,7 +106,7 @@ def getArgPlugins(pluginsString,configMap):
         if plugins[0] == "all":
             plugins.pop()
             for config_plugin in configMap['plugins']:
-                plugins.append(config_plugin['tag'])
+                plugins.append(config_plugin['plugin']+':'+config_plugin['tag'])
     return plugins
 
 if __name__ == "__main__":

@@ -20,33 +20,34 @@ def loadPlugin(pluginName):
 
 def getApiToken(configMap,plugin_tag): #
     for plugin in configMap['plugins']:
-        if plugin['tag'] == plugin_tag:
+        if plugin['plugin']+':'+plugin['tag'] == plugin_tag:
             return plugin['ApiToken']
 
 def getUrl(configMap,plugin_tag):
     for plugin in configMap['plugins']:
-        if plugin['tag'] == plugin_tag:
+        if plugin['plugin']+':'+plugin['tag'] == plugin_tag:
             return plugin['url']
 
 def getPermissions(configMap, plugin_tag):
     for plugin in configMap['plugins']:
-        if plugin['tag'] == plugin_tag:
+        if plugin['plugin']+':'+plugin['tag'] == plugin_tag:
             return plugin['permission']
 
 def getGroups(configMap,plugin_tag):
     groupsList=[]
-    for groups in configMap['plugins']:
-        if groups['tag']==plugin_tag:
-            for group in groups['permission']:
-                groupsList.append(group['group'])
+    for plugin in configMap['plugins']:
+        if plugin['plugin']+':'+plugin['tag']==plugin_tag:
+            groupsList=plugin['permission']['groups']
+            # for group in plugin['permission']:
+            #     groupsList.append(group['group'])
     return groupsList
 
 def inviteMessage(configMap,plugin_tag):
     for plugin in configMap['plugins']:
-        if plugin['tag'] == plugin_tag:
+        if plugin['plugin']+':'+plugin['tag'] == plugin_tag:
             return plugin['message_invite']
 
 def removalMessage(configMap,plugin_tag):
     for plugin in configMap['plugins']:
-        if plugin['tag'] == plugin_tag:
+        if plugin['plugin']+':'+plugin['tag'] == plugin_tag:
             return plugin['message_remove']
