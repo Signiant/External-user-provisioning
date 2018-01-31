@@ -27,11 +27,9 @@ def getJsonResponse(plugin,email, log, instruction):
                     "Instruction": instruction}
 
 def main():
-    if os.path.isfile('log.txt'):
-        log= open('log.txt','a')
-    else:
-        print('creating file')
-        log = open("log.txt", "w+")
+
+    print (sys.path)
+
 
     logging.basicConfig(filename='example.log', level=logging.INFO)
 
@@ -67,19 +65,19 @@ def main():
     pluginInstruction = []
     if args.plugin is not None:
         arg='add'
-        runPlugins(configMap, plugins,email,allPermissions,log, pluginInstruction,availablePlugins,arg)
+        runPlugins(configMap, plugins,email,allPermissions, pluginInstruction,availablePlugins,arg)
         print('sending email')
-        mail.emailOutput(email, configMap,pluginInstruction)
+        #mail.emailOutput(email, configMap,pluginInstruction)
     if args.remove is not None:
         arg='remove'
-        runPlugins(configMap, pluginsremove, email, allPermissions, log, pluginInstruction,availablePlugins,arg)
+        runPlugins(configMap, pluginsremove, email, allPermissions,  pluginInstruction,availablePlugins,arg)
         print('sending email')
         email= configMap['global']['smtp']['server']
-        mail.emailOutput(email, configMap,pluginInstruction)
+        #mail.emailOutput(email, configMap,pluginInstruction)
 
-    #log.close()
 
-def runPlugins(configMap,plugins,email,allPermissions,log, pluginInstruction,availablePlugins,arg):
+
+def runPlugins(configMap,plugins,email,allPermissions,pluginInstruction,availablePlugins,arg):
 
     for config_plugin in configMap['plugins']:  # get plugin from config file
         plugin_tag = config_plugin['plugin']+':'+config_plugin['tag']
@@ -95,7 +93,7 @@ def runPlugins(configMap,plugins,email,allPermissions,log, pluginInstruction,ava
                         print("Running remove: %s  " % plugin_tag)
                         json = (plugin_handle.removeUser(email, configMap, allPermissions, plugin_tag))
                     pluginInstruction.append(json)
-                    #log.write(json['Log'])
+
                     logging.info(json['Log'])
 
 #split args plugins

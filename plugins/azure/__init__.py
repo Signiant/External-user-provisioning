@@ -1,7 +1,10 @@
-import user_provision
-from plugin import removalMessage
-from azure.common.credentials import ServicePrincipalCredentials
+import urllib
+import azure
+from azure.mgmt.resource import ResourceManagementClient
 
+import user_provision
+
+from plugin import removalMessage
 
 def inviteUser(email,configMap,allPermissions,plugin_tag):
 
@@ -10,14 +13,18 @@ def inviteUser(email,configMap,allPermissions,plugin_tag):
             client_id= plugin['Client_Id']
             secret=plugin['Key']
             tenant=plugin['Tenant_Id']
+            portalEmail=plugin['email']
+            password=plugin["password"]
 
-    credentials = ServicePrincipalCredentials(
-        client_id=client_id,
-        secret=secret,
-        tenant=tenant
+    credentials = UserPassCredentials(
+        portalEmail,  # Your new user
+        password,  # Your password
     )
-
+    client = ResourceManagementClient(credentials, 'a')
+    for item in client.resource_groups.list():
+        print(item)
 
     log = 'Azure: '+email+' removed from signiant team.\n'
     instruction = email + removalMessage(configMap, plugin_tag)
     return user_provision.getJsonResponse(plugin_tag, email, log, instruction)
+

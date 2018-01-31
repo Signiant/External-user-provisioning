@@ -1,3 +1,4 @@
+import ast
 import imp,os
 
 pluginFolder = "./plugins"
@@ -51,3 +52,13 @@ def removalMessage(configMap,plugin_tag):
     for plugin in configMap['plugins']:
         if plugin['plugin']+':'+plugin['tag'] == plugin_tag:
             return plugin['message_remove']
+
+def getCLIgroups(configMap, plugin_tag, allPermissions):
+    cli_groups = []
+    for permission in allPermissions:
+        thisPermissions = ast.literal_eval(permission)  # to dictionnary
+        if thisPermissions['plugin'] == plugin_tag:
+            del thisPermissions['plugin']
+            return list(thisPermissions.values())
+    if len(cli_groups) == 0:
+        return getGroups(configMap, plugin_tag)

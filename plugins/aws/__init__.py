@@ -11,14 +11,12 @@ def inviteUser(email, configMap,allPermissions, plugin_tag):
     username = email[:-13]
     cli_groups = []
 
-
     for permission in allPermissions:
         thisPermissions = ast.literal_eval(permission)  # to dictionnary
         if thisPermissions['plugin'] == plugin_tag:
             del thisPermissions['plugin']
             cli_groups=list(thisPermissions.values())
             break
-
 
     if len(cli_groups) == 0:
         cli_groups = getGroups(configMap, plugin_tag)
