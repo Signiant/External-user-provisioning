@@ -61,7 +61,7 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
         aws_secret_access_key=Secret
     )
 
-    log = plugin_tag + ': ' + username + ' removed from signiant.\n'
+    log = plugin_tag + ': ' + username + ' removed from organization.\n'
     instruction = email+ removalMessage(configMap, plugin_tag)
     try:
         # remove from groups

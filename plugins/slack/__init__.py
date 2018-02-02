@@ -16,7 +16,7 @@ def removeUser(email,configMap,allPermissions, plugin_tag): #removes user as a m
     data = json.loads(my_json)
     teamId=data['team']['id']
 
-    log = 'Slack: User removed from Slack dev-signiant.\n'
+    log = "Slack: "+email+" removed from Slack.\n"
     instruction = email + removalMessage(configMap,plugin_tag)
     try:
         #get user id

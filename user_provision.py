@@ -7,6 +7,11 @@ import mail
 import plugin
 import datetime
 import logging
+from azure.common.credentials import UserPassCredentials
+from azure.mgmt.resource import ResourceManagementClient
+from azure.graphrbac.models import UserCreateParameters, PasswordProfile
+
+
 def readConfigFile(path):
     configMap = []
     try:
@@ -27,6 +32,7 @@ def getJsonResponse(plugin,email, log, instruction):
                     "Instruction": instruction}
 
 def main():
+    #help('modules azure.common')
 
     print (sys.path)
 
@@ -66,12 +72,12 @@ def main():
     if args.plugin is not None:
         arg='add'
         runPlugins(configMap, plugins,email,allPermissions, pluginInstruction,availablePlugins,arg)
-        print('sending email')
+       # print('sending email')
         #mail.emailOutput(email, configMap,pluginInstruction)
     if args.remove is not None:
         arg='remove'
         runPlugins(configMap, pluginsremove, email, allPermissions,  pluginInstruction,availablePlugins,arg)
-        print('sending email')
+       # print('sending email')
         email= configMap['global']['smtp']['server']
         #mail.emailOutput(email, configMap,pluginInstruction)
 
