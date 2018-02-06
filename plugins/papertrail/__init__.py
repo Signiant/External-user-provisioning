@@ -22,13 +22,12 @@ def inviteUser(email,configMap,allPermissions,plugin_tag):
 
     users = requests.post(getUrl(configMap, plugin_tag)+"/invite.json",headers={'X-Papertrail-Token': getApiToken(configMap, plugin_tag)}, data=rights)
 
-    log = plugin_tag+': Email invite from papertrail sent.\n'
+    log = plugin_tag+': Email invite sent from Papertrail.\n'
     instruction = inviteMessage(configMap,plugin_tag)
     if users.status_code!=200:
         log=plugin_tag+' error: '+str(users.status_code)+str(users.content)+' Make sure if email doesn\'t exist already.\n'
         instruction=log
-        print(log)
-    return user_provision.getJsonResponse( plugin_tag, email, log, instruction)
+    return user_provision.getJsonResponse( 'Papertrail', email, log, instruction)
 
 def removeUser(email,configMap,allPermissions, plugin_tag):
     #get id of user
@@ -50,4 +49,4 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
         log=plugin_tag+' '+ email+' does not exist, delete failed.\n'
 
 
-    return user_provision.getJsonResponse(plugin_tag, email, log, instruction)
+    return user_provision.getJsonResponse('Papertrail', email, log, instruction)

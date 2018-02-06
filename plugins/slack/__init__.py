@@ -7,7 +7,7 @@ def inviteUser(email,configMap,allPermissions, plugin_tag):
 
     log = 'Slack: Instruction sent in email.\n'
     instruction = inviteMessage(configMap,plugin_tag)
-    return user_provision.getJsonResponse(plugin_tag, email, log, instruction)
+    return user_provision.getJsonResponse('Slack', email, log, instruction)
 
 def removeUser(email,configMap,allPermissions, plugin_tag): #removes user as a member of dev-signiant
     #get team id
@@ -31,4 +31,4 @@ def removeUser(email,configMap,allPermissions, plugin_tag): #removes user as a m
         log = 'Slack: Remove from slack error:'+ email+' does not exist or is already inactive\n error: '+ str(error) +'\n'
         instruction = 'Remove from slack error:'+ email+'does not exist or is already inactive. Exception caught: '+ str(error)
 
-    return user_provision.getJsonResponse(plugin_tag, email, log, instruction)
+    return user_provision.getJsonResponse('Slack', email, log, instruction)

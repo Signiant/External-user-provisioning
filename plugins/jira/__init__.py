@@ -53,7 +53,8 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
                'Content-Type': 'application/json'
                }
 
-    #listing user groups returns empty array. Getting all org groups instead. https://docs.atlassian.com/software/jira/docs/api/REST/7.6.1/#api/2/user-getUser
+    #listing user groups returns empty array. Getting all org groups instead.
+    # https://docs.atlassian.com/software/jira/docs/api/REST/7.6.1/#api/2/user-getUser
     #get = requests.get(url+"/rest/api/2/user?username=" +email[:-13], headers=headers,auth=(user, password))
 
     #list org groups

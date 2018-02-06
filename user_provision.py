@@ -75,7 +75,7 @@ def main():
        # print('sending email')
         #mail.emailOutput(email, configMap,pluginInstruction)
     if args.remove is not None:
-        arg='remove'
+        arg='remove' #put in finction???
         runPlugins(configMap, pluginsremove, email, allPermissions,  pluginInstruction,availablePlugins,arg)
        # print('sending email')
         email= configMap['global']['smtp']['server']

@@ -41,9 +41,9 @@ def inviteUser(email,configMap,allPermissions, plugin_tag):
              "https://api.bitbucket.org/1.0/users/"+configMap['global']['organization']+"/invitations/" + email + "/"+configMap['global']['organization']+"/"+group+ "?access_token=" + access_token)
 
 
-     log = 'BitBucket: Email invite sent.\n'
+     log = 'BitBucket: Email invite sent from Bitbucket.\n'
      instruction = inviteMessage(configMap,plugin_tag)+ "Added to: " +" ".join(cli_groups)
-     return user_provision.getJsonResponse(plugin_tag, email, log, instruction)
+     return user_provision.getJsonResponse('Bitbucket', email, log, instruction)
 
 def removeUser(email,configMap,allPermissions, plugin_tag):
      #Get Authorization token
@@ -53,7 +53,6 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
      my_json = credential.content.decode('utf8')
      data = json.loads(my_json)
      access_token=data.get('access_token')
-     #print(credential.status_code)
 
      #get all groups
      groups=requests.get("https://api.bitbucket.org/1.0/groups/"+configMap['global']['organization']+"?access_token="+access_token)
@@ -63,9 +62,8 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
      # Remove from groups
      for group in data:
          delMem= requests.delete("https://api.bitbucket.org/1.0/groups/"+configMap['global']['organization']+"/"+group.get('name').lower()+"/members/"+email+"?access_token="+access_token)
-         #print(delMem.status_code)
 
      log = 'BitBucket: '+email+' removed from team.\n'
      instruction = email+ removalMessage(configMap,plugin_tag)
-     return user_provision.getJsonResponse(plugin_tag, email, log, instruction)
+     return user_provision.getJsonResponse('Bitbucket', email, log, instruction)
 

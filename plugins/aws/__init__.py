@@ -11,6 +11,9 @@ def inviteUser(email, configMap,allPermissions, plugin_tag):
     username = email[:-13]
     cli_groups = []
 
+    log = plugin_tag + ': ' + username + ' added to ' + plugin_tag + '\n'
+    instruction = inviteMessage(configMap, plugin_tag)
+
     for permission in allPermissions:
         thisPermissions = ast.literal_eval(permission)  # to dictionnary
         if thisPermissions['plugin'] == plugin_tag:
@@ -30,8 +33,11 @@ def inviteUser(email, configMap,allPermissions, plugin_tag):
                           aws_access_key_id=ID,
                           aws_secret_access_key=Secret
                           )
-
-    response = client.create_user(UserName=username)
+    try:
+        response = client.create_user(UserName=username)
+    except:
+        log = plugin_tag + ' user ' + username + ' already exists' + '\n'
+        instruction = plugin_tag + ' user ' + username + ' already exists'
 
     for group in cli_groups:
         response = client.add_user_to_group(
@@ -39,9 +45,7 @@ def inviteUser(email, configMap,allPermissions, plugin_tag):
             UserName=username
         )
 
-    log = plugin_tag+': '+username+' added to '+plugin_tag+'\n'
-    instruction= inviteMessage(configMap, plugin_tag)
-    return user_provision.getJsonResponse(plugin_tag,email, log, instruction)
+    return user_provision.getJsonResponse('AWS'+plugin_tag[4:],email, log, instruction)
 
 
 
@@ -95,4 +99,4 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
         else:
             raise e
 
-    return user_provision.getJsonResponse(plugin_tag,email, log, instruction)
+    return user_provision.getJsonResponse('AWS'+plugin_tag[4:],email, log, instruction)
