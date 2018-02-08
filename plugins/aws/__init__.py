@@ -3,15 +3,15 @@ import ast
 import botocore
 from botocore.exceptions import ClientError
 import boto3
-import user_provision
-from plugin import getUrl, getGroups, inviteMessage, removalMessage
+from user_provision import getJsonResponse #add folder path (External-user-provisioning-new)
+from plugin import getPermissions, getUrl, getApiToken, inviteMessage, removalMessage, getGroups
 
 
-def inviteUser(email, configMap,allPermissions, plugin_tag):
+def inviteUser(email, configMap,allPermissions, plugin_tag, name):
     username = email[:-13]
     cli_groups = []
 
-    log = plugin_tag + ': ' + username + ' added to ' + plugin_tag + '\n'
+    log =  'AWS: ' + username + ' added to ' + plugin_tag + '\n'
     instruction = inviteMessage(configMap, plugin_tag)
 
     for permission in allPermissions:
@@ -45,7 +45,7 @@ def inviteUser(email, configMap,allPermissions, plugin_tag):
             UserName=username
         )
 
-    return user_provision.getJsonResponse('AWS'+plugin_tag[4:],email, log, instruction)
+    return getJsonResponse('AWS '+plugin_tag[4:],email, log, instruction)
 
 
 
@@ -99,4 +99,4 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
         else:
             raise e
 
-    return user_provision.getJsonResponse('AWS'+plugin_tag[4:],email, log, instruction)
+    return getJsonResponse('AWS '+plugin_tag[4:],email, log, instruction)

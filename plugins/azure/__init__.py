@@ -1,13 +1,15 @@
 import random
 import string
+
 from azure.common.credentials import UserPassCredentials
-import user_provision
-from plugin import removalMessage, getGroups, getCLIgroups, inviteMessage
+from user_provision import getJsonResponse #add folder path (External-user-provisioning-new)
+from plugin import getPermissions, getUrl, getApiToken, inviteMessage, removalMessage, getGroups, getCLIgroups
+
 from azure.graphrbac.models import UserCreateParameters, PasswordProfile
 from azure.graphrbac import GraphRbacManagementClient
 
 
-def inviteUser(email,configMap,allPermissions,plugin_tag):
+def inviteUser(email,configMap,allPermissions,plugin_tag, name):
 
     groups= getCLIgroups(configMap, plugin_tag, allPermissions)
 
@@ -17,7 +19,7 @@ def inviteUser(email,configMap,allPermissions,plugin_tag):
             azureConfig=plugin
 
     log = 'Azure: ' + email[:-13] + ' added to ' + azureConfig["directory"] + '.\n'
-    instruction = email[:-13] + inviteMessage(configMap, plugin_tag)
+    instruction =  inviteMessage(configMap, plugin_tag)
     pw='Ab1'+''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase+string.digits, k=13))
 
     #Get a token with Azure Active Directory user / password
@@ -36,7 +38,7 @@ def inviteUser(email,configMap,allPermissions,plugin_tag):
             UserCreateParameters(
                 user_principal_name=email[:-13]+"@{}".format(azureConfig["directory"]),
                 account_enabled=True,
-                display_name=configMap['global']['full name'],
+                display_name=name,
                 mail_nickname=email[:-13],
                 password_profile=PasswordProfile(
                     password=pw,
@@ -64,7 +66,7 @@ def inviteUser(email,configMap,allPermissions,plugin_tag):
     # for user in users:
     #     print(user)
 
-    return user_provision.getJsonResponse("Azure Active Directory", email, log, instruction)
+    return getJsonResponse("Azure Active Directory", email, log, instruction)
 
 def removeUser(email,configMap,allPermissions, plugin_tag):
     log = plugin_tag + ': ' + email[:-13] + removalMessage(configMap, plugin_tag) + '\n'
@@ -94,6 +96,6 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
         graphrbac_client.users.delete(userID)
     except:
         log = plugin_tag + ': ' + email[:-13] +  ' does not exist in Azure AD\n'
-        instruction = email[:-13] + 'does not exist in Azure AD'
-    return user_provision.getJsonResponse("Azure Active Directory", email, log, instruction)
+        instruction = email[:-13] + ' does not exist in Azure AD'
+    return getJsonResponse("Azure Active Directory", email, log, instruction)
 

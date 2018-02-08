@@ -1,16 +1,12 @@
 import smtplib
-
 import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import lxml.etree as ET
-from lxml.etree import tostring
-
-
+import lxml
 
 path = os.path.dirname(__file__)
 
-def emailOutput(email, configMap, pluginInstruction):
+def emailOutput(email, configMap, pluginInstruction,arg):
 
     # Get the SMTP config
     smtp_server = configMap['global']['smtp']['server']
@@ -26,16 +22,19 @@ def emailOutput(email, configMap, pluginInstruction):
     email_template_file = configMap['global']['smtp']['template']
     email_to_addr = email
    # email_subject = "Team %s AWS Cost Report for %s to %s" % (team_name,getStartDate(configMap),getEndDate(configMap))
-    email_subject= "Signup to your Signiant accounts"
+    email_subject= "Signup to your Signiant Accounts"
 
+    if arg=='add':
+        content_title= configMap['global']['email_welcome']
+    if arg=='remove':
+        content_title= configMap['global']['email_removal_message']
 
-    #for loop here
     values = {}
     for plugin in pluginInstruction:
         values[plugin['Plugin name']]=plugin['Instruction']
 
     # insert values
-    template = EmailTemplate(template_name=email_template_file, values=values)
+    template = EmailTemplate(template_name=email_template_file, values=values,content_title=content_title)
 
     server = MailServer(server_name=smtp_server, username=smtp_user, password=smtp_pass, port=smtp_port, require_starttls=smtp_tls)
 
@@ -44,7 +43,6 @@ def emailOutput(email, configMap, pluginInstruction):
     print("email sent")
 
 
-# author Dave North
 class MailServer(object):
     msg = None
 
@@ -55,30 +53,37 @@ class MailServer(object):
         self.port = port
         self.require_starttls = require_starttls
 
-# author Dave North
 class EmailTemplate():
-    def __init__(self, template_name='', values={}, html=True):
+    def __init__(self, template_name='', values={}, html=True, content_title=''):
         self.template_name = template_name
         self.values = values
         self.html = html
+        self.content_title=content_title
 
     def render(self):
-        content = open(path +"/" + self.template_name).read()
-        #print(len(self.values))
-      #  for k,v in self.values.items():
-         #   content = content.replace('[%s]' % k,v)
+        from lxml.etree import tostring
+        path = os.path.dirname(__file__)
+        try:
+            content1 = open(path +"/" + self.template_name).read()
+        except: #run as PyPI
+            path="External-user-provisioning-new"
+            content1 = open(path +"/" + self.template_name).read()
+        ET= lxml.etree
+        tree = ET.fromstring(content1, parser=ET.HTMLParser())
+        contentnav = tree.find(".//div[@id='title']")
+        contentnav.append(ET.XML( "<h3>"+self.content_title+"</h3>"))
+        content1 = tostring(contentnav, encoding="unicode", method="html")
 
+        content = open(path +"/" + self.template_name).read()
         for k,v in self.values.items():
             tree = ET.fromstring(content, parser=ET.HTMLParser())
             contentnav = tree.find(".//table[@id='main']")
             contentnav.append(ET.XML("<tr><td style='padding: 4px 4px 4px 4px;'><b>"+k+"</b></td><td style='padding: 4px 4px 4px 4px;'>"+v+"</td></tr>"))
             content=tostring(contentnav, encoding="unicode", method="html")
-            #print(ET.tostring(tree))
-       # content = open(path + "/" + self.template_name, 'w+')
-        #content=contentnav
-        return content
 
+        return content1+content
 
+# author Dave North
 class MailMessage(object):
     html = False
 

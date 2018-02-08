@@ -1,18 +1,18 @@
 #return url and message
-import user_provision
-from plugin import getUrl, inviteMessage, removalMessage
+from user_provision import getJsonResponse #add folder path (External-user-provisioning-new)
+from plugin import getPermissions, getUrl, getApiToken, inviteMessage, removalMessage
 
 
 def removeUser(email, configMap, allPermissions, plugin_tag):
     log = 'artifactory: '+ email+' removed alongside AD account \n'
     instruction= email+ removalMessage(configMap,plugin_tag)
-    return user_provision.getJsonResponse('Artifactory', email, log, instruction)
+    return getJsonResponse('Artifactory', email, log, instruction)
 
 #instruct user to join using AD credentials
-def inviteUser(email, configMap, allPermissions, plugin_tag):
+def inviteUser(email, configMap, allPermissions, plugin_tag, name):
     log = 'Artifactory: Instruction sent in email.\n'
     instruction = inviteMessage(configMap,plugin_tag)
-    return user_provision.getJsonResponse('Artifactory', email, log, instruction)
+    return getJsonResponse('Artifactory', email, log, instruction)
 
 
 

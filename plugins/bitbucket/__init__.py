@@ -1,8 +1,8 @@
 import ast
 import json
 import requests
-import user_provision
-from plugin import getGroups, inviteMessage, removalMessage
+from user_provision import getJsonResponse #add folder path (External-user-provisioning-new)
+from plugin import getPermissions, getUrl, getApiToken, inviteMessage, removalMessage, getGroups, getCLIgroups
 
 
 def getKey(configMap):
@@ -15,7 +15,7 @@ def getSecret(configMap):
           if config_key['plugin']+':'+config_key['tag'] == 'bitbucket:prod':
                return config_key['secret']
 
-def inviteUser(email,configMap,allPermissions, plugin_tag):
+def inviteUser(email,configMap,allPermissions, plugin_tag, name):
 
      #Get Authorization token
      data = {'grant_type': 'client_credentials'}
@@ -42,8 +42,8 @@ def inviteUser(email,configMap,allPermissions, plugin_tag):
 
 
      log = 'BitBucket: Email invite sent from Bitbucket.\n'
-     instruction = inviteMessage(configMap,plugin_tag)+ "Added to: " +" ".join(cli_groups)
-     return user_provision.getJsonResponse('Bitbucket', email, log, instruction)
+     instruction = inviteMessage(configMap,plugin_tag)#+ "Added to: " +" ".join(cli_groups)
+     return getJsonResponse('Bitbucket', email, log, instruction)
 
 def removeUser(email,configMap,allPermissions, plugin_tag):
      #Get Authorization token
@@ -65,5 +65,5 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
 
      log = 'BitBucket: '+email+' removed from team.\n'
      instruction = email+ removalMessage(configMap,plugin_tag)
-     return user_provision.getJsonResponse('Bitbucket', email, log, instruction)
+     return getJsonResponse('Bitbucket', email, log, instruction)
 

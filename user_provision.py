@@ -4,7 +4,8 @@ import os
 import sys
 import yaml
 import mail
-import plugin
+import plugin  # to run as PyPI
+
 import datetime
 import logging
 from azure.common.credentials import UserPassCredentials
@@ -33,16 +34,20 @@ def getJsonResponse(plugin,email, log, instruction):
 
 def main():
     #help('modules azure.common')
+    try:
+        from . import mail
+    except:
+        import mail
 
     print (sys.path)
-
 
     logging.basicConfig(filename='example.log', level=logging.INFO)
 
     #Command Line
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
     parser = argparse.ArgumentParser(description='External user provisioning tool')
-    parser.add_argument('-e','--email', help='New user email',required=True)
+    parser.add_argument('-n','--name', help='New user\'s full name',required=True)
+    parser.add_argument('-e','--email', help='New user\'s email',required=True)
     parser.add_argument('-c','--config', help='Full path to a config file',required=True)
     parser.add_argument('-p','--plugin', help='The plugin(s) to add users seperated by commas.',required=False)
     parser.add_argument('-r','--remove', help='the plugin to execute to remove users',required=False)
@@ -54,7 +59,7 @@ def main():
     availablePlugins=[]
     for plugin in configMap['plugins']:
         availablePlugins.append(plugin['plugin']+':'+plugin['tag'])
-
+    print(configMap)    
     #{'plugin':'aws', 'group1': 'IAMChangeMyPW_ManageMyKeys', 'group2': 'SigniantDevelopers'};{'plugin':'papertrail-dev','user[email]':'test@signiant.com','user[read_only]':1,'user[manage_members]':0,'user[manage_billing]':0,'user[purge_logs]':0};{'plugin':'papertrail-prod','user[email]':'test@signiant.com','user[read_only]':1,'user[manage_members]':0,'user[manage_billing]':0,'user[purge_logs]':0}
     allPermissions=[]
     if args.permission is not None:
@@ -70,21 +75,20 @@ def main():
 
     pluginInstruction = []
     if args.plugin is not None:
-        arg='add'
-        runPlugins(configMap, plugins,email,allPermissions, pluginInstruction,availablePlugins,arg)
-       # print('sending email')
-        #mail.emailOutput(email, configMap,pluginInstruction)
+        runPlugins(configMap, plugins,email,allPermissions, pluginInstruction,availablePlugins,args.name,arg='add')
+        print('sending email')
+        mail.emailOutput(email, configMap,pluginInstruction,arg='add')
     if args.remove is not None:
-        arg='remove' #put in finction???
-        runPlugins(configMap, pluginsremove, email, allPermissions,  pluginInstruction,availablePlugins,arg)
-       # print('sending email')
+        runPlugins(configMap, pluginsremove, email, allPermissions, pluginInstruction,availablePlugins,args.name,arg='remove')
+        print('sending email')
         email= configMap['global']['smtp']['server']
-        #mail.emailOutput(email, configMap,pluginInstruction)
+        mail.emailOutput(email, configMap,pluginInstruction,arg='remove')
 
-
-
-def runPlugins(configMap,plugins,email,allPermissions,pluginInstruction,availablePlugins,arg):
-
+def runPlugins(configMap,plugins,email,allPermissions,pluginInstruction,availablePlugins,name,arg):
+    try:
+        from . import plugin #to run as PyPI
+    except:
+        import plugin
     for config_plugin in configMap['plugins']:  # get plugin from config file
         plugin_tag = config_plugin['plugin']+':'+config_plugin['tag']
         pluginName = config_plugin['plugin']
@@ -94,7 +98,7 @@ def runPlugins(configMap,plugins,email,allPermissions,pluginInstruction,availabl
                     plugin_handle = plugin.loadPlugin(pluginName)
                     if arg=='add':
                         print("Running invite: %s  " % plugin_tag)
-                        json = (plugin_handle.inviteUser(email, configMap, allPermissions, plugin_tag))
+                        json = (plugin_handle.inviteUser(email, configMap, allPermissions, plugin_tag, name))
                     if arg == 'remove':
                         print("Running remove: %s  " % plugin_tag)
                         json = (plugin_handle.removeUser(email, configMap, allPermissions, plugin_tag))

@@ -1,13 +1,13 @@
+import imp
+
 import requests
 import json
-import user_provision
 import ast
-
-# Send papertrail email invite to user
+from user_provision import getJsonResponse #add folder path (External-user-provisioning-new)
 from plugin import getPermissions, getUrl, getApiToken, inviteMessage, removalMessage
 
 
-def inviteUser(email,configMap,allPermissions,plugin_tag):
+def inviteUser(email,configMap,allPermissions,plugin_tag, name):
 
     rights={}
     for permission in allPermissions:
@@ -27,7 +27,7 @@ def inviteUser(email,configMap,allPermissions,plugin_tag):
     if users.status_code!=200:
         log=plugin_tag+' error: '+str(users.status_code)+str(users.content)+' Make sure if email doesn\'t exist already.\n'
         instruction=log
-    return user_provision.getJsonResponse( 'Papertrail', email, log, instruction)
+    return getJsonResponse( 'Papertrail ' + plugin_tag[11:], email, log, instruction)
 
 def removeUser(email,configMap,allPermissions, plugin_tag):
     #get id of user
@@ -39,7 +39,7 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
         if element['email']==email:
             id=element['id']
 
-    log = plugin_tag+': '+email+'User removed from papertrail.\n'
+    log = plugin_tag+': '+email+' removed from papertrail.\n'
     instruction = email+ removalMessage(configMap,plugin_tag)
     try:
         users = requests.delete(getUrl(configMap, plugin_tag)+"/"+str(id)+".json",
@@ -49,4 +49,4 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
         log=plugin_tag+' '+ email+' does not exist, delete failed.\n'
 
 
-    return user_provision.getJsonResponse('Papertrail', email, log, instruction)
+    return getJsonResponse('Papertrail ' + plugin_tag[11:], email, log, instruction)

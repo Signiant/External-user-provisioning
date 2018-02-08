@@ -1,5 +1,5 @@
 # External-user-provisioning
-Add or remove users from multiple web services and set desired permissions
+Add or remove users from multiple web services with desired permissions
 * AWS
 * Papertrail
 * Bitbucket
@@ -22,6 +22,7 @@ pip install
 The User Provisioning Tool is a command line tool that accepts a path to the config file, the new user's email, the services to be run and custom permissions or groups for each service.
 
 example:
+
 -c "/Users/elaroche/PycharmProjects/External-user-provisioning-new/config-file/config.yaml" -e test@gmail.com -p github:prod;aws:dev2 -l {'plugin':'bitbucket','group1':'developers'};{'plugin':'aws- dev2','group1':'IAMChangeMyPW','group2':'Developers'};{'plugin':'papertrail-dev','user[email]':'test@gmail.com','user[read_only]':1,'user[manage_members]':0,'user[manage_billing]':0,'user[purge_logs]':0};{'plugin':'papertrail-prod','user[email]':'test@gmail.com','user[read_only]':1,'user[manage_members]':0,'user[manage_billing]':0,'user[purge_logs]':0}
 * -c : provide a path to where your config file is located
 * -e : the email of the new user you will be adding/removing

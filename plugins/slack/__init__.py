@@ -1,13 +1,13 @@
 import json
 import requests
-import user_provision
-from plugin import getApiToken, getUrl, inviteMessage, removalMessage
+from user_provision import getJsonResponse #add folder path (External-user-provisioning-new)
+from plugin import getPermissions, getUrl, getApiToken, inviteMessage, removalMessage, getGroups, getCLIgroups
 
-def inviteUser(email,configMap,allPermissions, plugin_tag):
+def inviteUser(email,configMap,allPermissions, plugin_tag, name):
 
     log = 'Slack: Instruction sent in email.\n'
     instruction = inviteMessage(configMap,plugin_tag)
-    return user_provision.getJsonResponse('Slack', email, log, instruction)
+    return getJsonResponse('Slack', email, log, instruction)
 
 def removeUser(email,configMap,allPermissions, plugin_tag): #removes user as a member of dev-signiant
     #get team id
@@ -28,7 +28,7 @@ def removeUser(email,configMap,allPermissions, plugin_tag): #removes user as a m
         #disable user
         user = requests.post("https://slack.com/api/users.admin.setInactive" + "?token=" + getApiToken(configMap,plugin_tag) + "&user="+slackUserID)
     except Exception as error:
-        log = 'Slack: Remove from slack error:'+ email+' does not exist or is already inactive\n error: '+ str(error) +'\n'
-        instruction = 'Remove from slack error:'+ email+'does not exist or is already inactive. Exception caught: '+ str(error)
+        log = 'Slack: Remove from slack error: '+ email+' does not exist or is already inactive\n error: '+ str(error) +'\n'
+        instruction = 'Remove from slack error: '+ email+' does not exist or is already inactive. Exception caught: '+ str(error)
 
-    return user_provision.getJsonResponse('Slack', email, log, instruction)
+    return getJsonResponse('Slack', email, log, instruction)

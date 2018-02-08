@@ -1,13 +1,11 @@
-import ast
-
 import requests
 import json
 
-import user_provision
-from plugin import getGroups, inviteMessage, getCLIgroups, removalMessage
+from user_provision import getJsonResponse #add folder path (External-user-provisioning-new)
+from plugin import getPermissions, getUrl, getApiToken, inviteMessage, removalMessage, getGroups, getCLIgroups
 
 
-def inviteUser(email,configMap,allPermissions, plugin_tag):
+def inviteUser(email,configMap,allPermissions, plugin_tag, name):
 
     for plugin in configMap['plugins']:
         if plugin['plugin'] + ':' + plugin['tag'] == plugin_tag:
@@ -19,7 +17,7 @@ def inviteUser(email,configMap,allPermissions, plugin_tag):
         "name": email[:-13], #username
         "password": "test",
         "emailAddress": email,
-        "displayName": configMap['global']['full name'],
+        "displayName": name,
         "applicationKeys": [
             "jira-server"
         ]
@@ -37,9 +35,9 @@ def inviteUser(email,configMap,allPermissions, plugin_tag):
     for group in groups:
         add=requests.post(url+'/rest/api/2/group/user?groupname='+group, auth=(user, password),headers=headers, data=data )
 
-    log = plugin_tag + ': ' + email[:-13] + ' added to ' + plugin_tag + '\n'
+    log = 'Jira: ' + email[:-13] + ' added to ' + plugin_tag + '\n'
     instruction = inviteMessage(configMap, plugin_tag)
-    return user_provision.getJsonResponse("Jira Server",email, log, instruction)
+    return getJsonResponse("Jira Server",email, log, instruction)
 
 def removeUser(email, configMap,allPermissions, plugin_tag):
 
@@ -71,4 +69,4 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
 
     log = plugin_tag + ': ' + email[:-13] + ' removed from jira.\n'
     instruction = email + removalMessage(configMap, plugin_tag)
-    return user_provision.getJsonResponse("Jira Server", email, log, instruction)
+    return getJsonResponse("Jira Server", email, log, instruction)
