@@ -46,7 +46,7 @@ Option 1:
 
 Option 2:
  1. Install python 3 or higher
- 2. In a the terminal run:
+ 2. In the terminal run:
  >     sudo pip3 install ExternalUserProvisioning
  3. Run the tool anywhere using the new console script "userprovision" with required arguments.
 
