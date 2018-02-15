@@ -1,0 +1,111 @@
+global:
+  organization: "X"
+  email_welcome: "Welcome to X!  In the engineering organization, we use some internal services and some external.  The internal services are accessed using your Active Directory login but the external services use a variety of login methods.  Below you will find instructions on how to activate or gain access to these external services."
+  email_removal_message: "The user <username> has been removed or deactivated in the following services:"
+  smtp:
+      server: "X"
+      port: "X"
+      tls: True
+      user: "X"
+      password: "xxxx"
+      from_addr: "X"
+      cc_addrs:
+        - "X" #send yourself a copy
+      template: "notification-email.html"
+      admin_email: "X" #address sent to when removing user
+
+plugins:
+  - tag: "dev"
+    plugin: "papertrail"
+    ApiToken: "xxxxxxxxxxxxxxxxxxxxx"
+    url: "https://papertrailapp.com/api/v1/users"
+    message_invite: 'Look for your email invite from papertrail Dev in your inbox.'
+    message_remove: " was removed from the Papertrail Dev account."
+    permission:
+        user[email]: "" #required
+        user[read_only]: 1 #required
+        user[manage_members]: 0
+        user[manage_billing]: 0
+        user[purge_logs]: 0
+
+  - tag: "prod"
+    plugin: "papertrail"
+    ApiToken: "xxxxxxxxxxxxxxxxxxxxx"
+    url: "https://papertrailapp.com/api/v1/users"
+    message_invite: 'Look for your email invite from Papertrail Prod in your inbox.'
+    message_remove: " was removed from Papertrail Prod account."
+    permission:
+        user[email]: "" #automatically added
+        user[read_only]: 1 #required
+        user[manage_members]: 0
+        user[manage_billing]: 0
+        user[purge_logs]: 0
+
+  - tag: "prod"
+    plugin: "bitbucket"
+    key: "xxxxxxxxxxxxxxxxxxxxx"
+    secret: "xxxxxxxxxxxxxxxxxxxxx"
+    message_invite: 'Look for your email invite from BitBucket in your inbox to join the x team.'
+    message_remove: ' was removed from the x Bitbucket team.'
+    permission:
+      groups:
+        - developers
+
+  - tag: "prod"
+    plugin: "slack"
+    ApiToken: "xxxx-xxxxxxxxxxxxxxxxxxxxx-xxxx-xxxx-xxxxxxxxxxxxxxxxxxxxx"
+    url: "https://x.slack.com/signup"
+    message_invite: "Follow link to activate your account using your x email and password: https://x.slack.com/signup"
+    message_remove: ' was removed from the x-dev Slack team.'
+
+  - tag: "prod"
+    plugin: "artifactory"
+    message_invite: "Login using your Active Directory credentials, following the instructions here: https://"
+    message_remove: " is remove along with AD account"
+
+  - tag: "dev1"
+    plugin: "aws"
+    ID: 'xxxxxxxxxxxxxxxxxxxxx'
+    Secret: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+    url: 'https://x.signin.aws.amazon.com/console'
+    message_invite: "Your login information to the AWS account x is <username>. You can access the AWS console at this URL: https://x.signin.aws.amazon.com/console.  Please post in #it-support on Slack to obtain your password.  Once logged in, you can follow these instructions to generate an access key/secret key for API access: https://goo.gl/cHQZbV" #(signiant(prod/dev), username, URL)#"You have been added to AWS signiantdev. Contact devops@signiant.com for your username and password.  https://signiantdev.signin.aws.amazon.com/console"
+    message_remove: " was removed from x"
+    permission:
+      groups:
+        - groupname
+        - groupname
+
+  - tag: "dev2"
+    plugin: "aws"
+    ID: 'xxxxxxxxxxxxxxxxxxxxx'
+    Secret: 'xxxxxxxxxxxxxxxxxxxxxx'
+    url: 'https://x.signin.aws.amazon.com/console'
+    message_invite: "Your login information to the AWS account x is <username>. You can access the AWS console at this URL: https://signiantdev2.signin.aws.amazon.com/console.  Please post in #it-support on Slack to obtain your password.  Once logged in, you can follow these instructions to generate an access key/secret key for API access: https://"
+    message_remove: " was removed from x"
+    permission:
+       groups:
+        - groupname
+        - groupname
+
+  - tag: "dev1"
+    plugin: "azure"
+    email: '.onmicrosoft.com'
+    password: 'xxxxx'
+    directory: '.onmicrosoft.com'
+    url: 'https://graph.windows.net/x.onmicrosoft.com/users/'
+    message_invite: "Your login information to the Azure x account is <username>.  You can access the Azure console at this URL: https://portal.azure.com/. Please post in #it-support on Slack to obtain your password."
+    message_remove: " removed from x Azure AD."
+    permission:
+      groups:
+        - groupname
+  - tag: "prod"
+    plugin: "jira"
+    url: "http://"
+    admin: 'x'
+    password: 'xxx'
+    message_invite: "Your login information to JIRA is your Active Directory credentials. You can access the JIRA console at this URL: http://"
+    message_remove: " was removed from all groups; <username> will be deactivated along with their AD login."
+    permission:
+      groups:
+        - groupname
+        - groupname
