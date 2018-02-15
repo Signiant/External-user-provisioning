@@ -1,7 +1,7 @@
 import ast
 import imp,os
 
-pluginFolder = "./plugins"
+pluginFolder = "./project/plugins"
 mainFile = "__init__"
 
 
@@ -17,7 +17,6 @@ def getAllPlugins():
     return plugins
 
 def loadPlugin(pluginName):
-    print(os.path)
     try:
         return imp.load_source(pluginName, os.path.join(pluginFolder, pluginName, mainFile + ".py"))
     except:
@@ -43,8 +42,7 @@ def getGroups(configMap,plugin_tag):
     for plugin in configMap['plugins']:
         if plugin['plugin']+':'+plugin['tag']==plugin_tag:
             groupsList=plugin['permission']['groups']
-            # for group in plugin['permission']:
-            #     groupsList.append(group['group'])
+
     return groupsList
 
 def inviteMessage(configMap,plugin_tag):
@@ -60,7 +58,7 @@ def removalMessage(configMap,plugin_tag):
 def getCLIgroups(configMap, plugin_tag, allPermissions):
     cli_groups = []
     for permission in allPermissions:
-        thisPermissions = ast.literal_eval(permission)  # to dictionnary
+        thisPermissions = ast.literal_eval(permission)
         if thisPermissions['plugin'] == plugin_tag:
             del thisPermissions['plugin']
             return list(thisPermissions.values())

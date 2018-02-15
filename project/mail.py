@@ -3,10 +3,12 @@ import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import lxml
+from bs4 import BeautifulSoup
+
 
 path = os.path.dirname(__file__)
 
-def emailOutput(email, configMap, pluginInstruction,arg):
+def emailOutput(email, configMap, pluginInstruction, arg):
 
     # Get the SMTP config
     smtp_server = configMap['global']['smtp']['server']
@@ -17,17 +19,15 @@ def emailOutput(email, configMap, pluginInstruction,arg):
     smtp_pass = configMap['global']['smtp']['password']
     smtp_from = configMap['global']['smtp']['from_addr']
     smtp_cc = configMap['global']['smtp']['cc_addrs']
-
-
     email_template_file = configMap['global']['smtp']['template']
-    email_to_addr = email
-   # email_subject = "Team %s AWS Cost Report for %s to %s" % (team_name,getStartDate(configMap),getEndDate(configMap))
-    email_subject= "Signup to your Signiant Accounts"
 
-    if arg=='add':
-        content_title= configMap['global']['email_welcome']
+    email_to_addr = email
+    email_subject = "Signup to your Accounts"
+    content_title= configMap['global']['email_welcome']
     if arg=='remove':
-        content_title= configMap['global']['email_removal_message']
+        email_to_addr = configMap['global']['smtp']['admin_email']
+        email_subject = "User Provisioning Tool - User Removal"
+        content_title= configMap['global']['email_removal_message'].replace("<username>", email[:-13] )
 
     values = {}
     for plugin in pluginInstruction:
@@ -46,7 +46,7 @@ def emailOutput(email, configMap, pluginInstruction,arg):
 class MailServer(object):
     msg = None
 
-    def __init__(self, server_name='east.EXCH024.serverdata.net', username='<username>', password='<password>', port=587, require_starttls=True):
+    def __init__(self, server_name='<server_name>', username='<username>', password='<password>', port='<smtp_port>', require_starttls=True):
         self.server_name = server_name
         self.username = username
         self.password = password
@@ -66,22 +66,24 @@ class EmailTemplate():
         try:
             content1 = open(path +"/" + self.template_name).read()
         except: #run as PyPI
-            path="External-user-provisioning-new"
+            path="project"
             content1 = open(path +"/" + self.template_name).read()
-        ET= lxml.etree
-        tree = ET.fromstring(content1, parser=ET.HTMLParser())
-        contentnav = tree.find(".//div[@id='title']")
-        contentnav.append(ET.XML( "<h3>"+self.content_title+"</h3>"))
-        content1 = tostring(contentnav, encoding="unicode", method="html")
 
-        content = open(path +"/" + self.template_name).read()
-        for k,v in self.values.items():
-            tree = ET.fromstring(content, parser=ET.HTMLParser())
-            contentnav = tree.find(".//table[@id='main']")
-            contentnav.append(ET.XML("<tr><td style='padding: 4px 4px 4px 4px;'><b>"+k+"</b></td><td style='padding: 4px 4px 4px 4px;'>"+v+"</td></tr>"))
-            content=tostring(contentnav, encoding="unicode", method="html")
+        html=BeautifulSoup(content1, 'html.parser')
+        html.find("div",{"id":'title'}).append(self.content_title)
+        count=1
+        for k, v in self.values.items():
+            row=html.new_tag("tr", id="row"+str(count))
+            html.find("table", {"id": 'services'}).append(row)
+            serviceName=html.new_tag("td", style='padding: 4px 4px 4px 4px', id="serviceName"+str(count))
+            html.find("tr", {"id": 'row'+str(count)}).append(serviceName)
+            serviceInstruction = html.new_tag("td", style='padding: 4px 4px 4px 4px', id="instructions" + str(count))
+            html.find("tr", {"id": 'row' + str(count)}).append(serviceInstruction)
+            serviceName.string=k
+            serviceInstruction.string = v
+            count+=1
 
-        return content1+content
+        return str(html)
 
 # author Dave North
 class MailMessage(object):
