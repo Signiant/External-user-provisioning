@@ -1,37 +1,45 @@
 # External User Provisioning Tool
-Add or remove users from multiple web services with desired permissions and notify new user.
+Add or remove users from multiple web services with desired permissions and notify new user. Useful when a service does not support single sign-on or the plan cost to get single sign-on is prohibitivly expensive
+
+Currently supports:
+
 * AWS
 * Papertrail
 * Bitbucket
 * Slack
 * Azure
 * Jira
-
- Notify only:
 * Artifactory
+
+The tool is built using a plugin model so adding new services that have an API should be just a matter of dropping in a new plugin and associated configuration file changes.
 
 ## Usage
 
 The User Provisioning Tool is a command line tool that accepts a path to the config file, the new user's email, the services to be run and custom permissions or groups for each service. The tool sends an email notifying the new user that emails from various services have been sent to them or by providing them with a link to a service that prompts them to activate their organization account.
 
-example:
+## Example
 
-The following command creates a Bitbucket prod account in the developers group, a AWS dev2 account in ManageKeys and Developers groups ManageKeys and Developers and a Papertrail account with custom permissions.
+The following command creates:
+* a Bitbucket user in the prod account who is a member of the developers group
+* an IAM user in the AWS dev2 account who is a member of the ManageKeys and Developers groups
+* a user in Papertrail with custom permissions
 
-    python3 user_provision.py
-    	    -c "/External-user-provisioning-new/config-file/config.yaml" \
-            -e test@gmail.com \
-            -n "Full Name" \
-            -p bitbucket:prod,aws:dev2,papertrail:dev \
-            -l {'plugin':'bitbucket:','group1':'developers'};{'plugin':'aws:dev2','group1':'ManageKeys','group2':'Developers'};{'plugin':'papertrail:dev','user[email]':'test@gmail.com','user[read_only]':1,'user[manage_members]':0,'user[manage_billing]':0,'user[purge_logs]':0}
+```bash
+python3 user_provision.py
+    -c "/External-user-provisioning-new/config-file/config.yaml" \
+    -e test@gmail.com \
+    -n "Full Name" \
+    -p bitbucket:prod,aws:dev2,papertrail:dev \
+    -l {'plugin':'bitbucket:','group1':'developers'};{'plugin':'aws:dev2','group1':'ManageKeys','group2':'Developers'};{'plugin':'papertrail:dev','user[email]':'test@gmail.com','user[read_only]':1,'user[manage_members]':0,'user[manage_billing]':0,'user[purge_logs]':0}
+```
 
-Required:
-* -c : provide a file path to your config file
+### Required
+* -c : a file path to your config file
 * -e : the email of the new user you will be adding/removing
-* -p or -r : name of the services to be run separated by semicolons (-p to add and -r to remove)
+* -p or -r : name of the services to create accounts in separated by semicolons (-p to add, -r to remove)
 * -n : new user's full name
 
-Not Required:
+### Optional
 * -l : plugins delimited and separated by semicolons with the plugin name as the first field.
 
 ## Sample Notification Email
@@ -39,20 +47,21 @@ Not Required:
 
 
 ## Installing the Tool
-Option 1:
+
+Option 1 (clone)
 1. Install python 3 or higher
 2. Clone the repository at https://github.com/Signiant/External-user-provisioning
-3. Run the tool from the project folder as a python app
+3. Run the tool from the project folder as a python app (see example above)
 
-Option 2:
+Option 2 (pip)
  1. Install python 3 or higher
  2. In the terminal run:
  >     sudo pip3 install ExternalUserProvisioning
  3. Run the tool anywhere using the new console script "userprovision" with required arguments.
 
-
-> userprovision -n "Full Name"  -c "/Users/user/PycharmProjects/External-user-provisioning-new/project/config-file/config.yaml" -e test@gmail.com -p papertrail:prod
-
+```bash
+userprovision -n "Full Name"  -c "/config-files/user-prov/config-file/config.yaml" -e test@gmail.com -p papertrail:prod
+```
 
 ## Setting up the Config File
 
@@ -79,19 +88,19 @@ A sample config file template is provided in /project/samples
 
 #### AWS
 1. Sign on AWS with your admin account and go to IAM service, in users find your account. In the security credentials tab under access keys create a key and secret. Enter those values into the config file.
-2. Enter default groups
+2. Enter default groups for the new user
 
 #### Azure Active Directory
 1. Enter the administrator email and password.
-2. Provide a group a default group.
+2. Provide a default group to add the new user to
 
 #### Artifactory
-1. The new user is created along with the AD account.
+1. At Signiant, we use SAML for artifactory
 2. The User Provisioning tool sends a link telling the new user to activate their account using their AD username and password
 
 #### Jira
-1. Enter your username and password of your Jira administrator account.
-2. Provide user groups
+1. Enter a username and password of your Jira administrator account
+2. Provide groups to add the new user to
 
 
 ### Additional Information
@@ -102,4 +111,5 @@ A sample config file template is provided in /project/samples
    user in a secure manner
    - Users are not deleted or set inactive in Jira. Instead users are
    removed from all groups.
-   - for help: python3.6 user_provision.py --help
+   - for help:
+ > python3.6 user_provision.py --help
