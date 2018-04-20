@@ -87,8 +87,8 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
         response = client.delete_user(UserName=username)
     except (botocore.exceptions.ClientError, botocore.exceptions.ClientError) as e:
         if e.response['Error']['Code'] == 'NoSuchEntity':
-            log = plugin_tag+': Failed to remove ' +username+ '. '+ str(e)
-            instruction = plugin_tag+': Failed to remove '+username+ '. '+ str(e)
+            log = plugin_tag+': Failed to remove ' +username+ '. ' + str(e)
+            instruction = plugin_tag+': Failed to remove '+username + '. ' + str(e)
         else:
             raise e
 

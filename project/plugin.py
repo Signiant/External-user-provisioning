@@ -18,11 +18,11 @@ def getAllPlugins():
 
 def loadPlugin(pluginName):
     try:
+        return imp.load_source(pluginName, os.path.join(pluginFolder[1:], pluginName, mainFile + ".py"))
+    except FileNotFoundError:
         return imp.load_source(pluginName, os.path.join(pluginFolder, pluginName, mainFile + ".py"))
-    except:
-        return imp.load_source(pluginName, os.path.join('user'+pluginFolder[1:], pluginName, mainFile + ".py"))
 
-def getApiToken(configMap,plugin_tag): #
+def getApiToken(configMap,plugin_tag):
     for plugin in configMap['plugins']:
         if plugin['plugin']+':'+plugin['tag'] == plugin_tag:
             return plugin['ApiToken']

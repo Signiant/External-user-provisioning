@@ -1,6 +1,5 @@
 import random
 import string
-import azure
 from project.user_provision import getJsonResponse
 from project.plugin import inviteMessage, removalMessage, getCLIgroups
 
@@ -21,7 +20,7 @@ def inviteUser(email,configMap,allPermissions,plugin_tag, name):
     pw = 'Ab1'+''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase+string.digits, k=13))
 
     credentialsToken = UserPassCredentials(
-        azureConfig['email'],  #  new user
+        azureConfig['email'],  #new user
         azureConfig["password"],
         resource="https://graph.windows.net"
     )

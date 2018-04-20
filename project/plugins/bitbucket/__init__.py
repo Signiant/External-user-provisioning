@@ -15,6 +15,7 @@ def getSecret(configMap):
           if config_key['plugin']+':'+config_key['tag'] == 'bitbucket:prod':
                return config_key['secret']
 
+
 def inviteUser(email,configMap,allPermissions, plugin_tag, name):
 
      #Get Authorization token
@@ -37,7 +38,8 @@ def inviteUser(email,configMap,allPermissions, plugin_tag, name):
 
      for group in cli_groups:
          invGroup = requests.put(
-             "https://api.bitbucket.org/1.0/users/"+configMap['global']['organization']+"/invitations/" + email + "/"+configMap['global']['organization']+"/"+group+ "?access_token=" + access_token)
+             "https://api.bitbucket.org/1.0/users/"+configMap['global']['organization']+"/invitations/"
+             + email + "/"+configMap['global']['organization']+"/"+group+ "?access_token=" + access_token)
 
 
      log = 'BitBucket: Email invite sent from Bitbucket.\n'
