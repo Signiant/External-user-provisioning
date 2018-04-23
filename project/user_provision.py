@@ -39,8 +39,6 @@ def getJsonResponse(plugin,email, log, instruction):
 
 def main():
 
-    logging.basicConfig(filename='example.log', level=logging.INFO)
-
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
     parser = argparse.ArgumentParser(description='External user provisioning tool')
     parser.add_argument('-n', '--name', help='New user\'s full name',required=True)
@@ -50,6 +48,9 @@ def main():
     parser.add_argument('-r', '--remove', help='The plugin to execute to remove users',required=False)
     parser.add_argument('-l', '--permission', help='Permissions for apps that can accept permissions as parameters. Write as python dict.',required=False)
     args = parser.parse_args()
+       
+    logging.basicConfig(filename='log_'+args.email[:-13]+'.log', level=logging.INFO)
+
     configMap = readConfigFile(args.config)
 
     availablePlugins = []
