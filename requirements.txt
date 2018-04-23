@@ -1,0 +1,8 @@
+setuptools
+azure.graphrbac
+msrestazure
+BeautifulSoup4>=4.6.0
+PyYAML
+requests
+botocore
+boto3
