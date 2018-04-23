@@ -6,3 +6,4 @@ PyYAML
 requests
 botocore
 boto3
+lxml>=4.1.1
