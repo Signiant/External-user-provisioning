@@ -23,27 +23,41 @@ def inviteUser(email,configMap,allPermissions,plugin_tag, name):
     log = plugin_tag+': Email invite sent from Papertrail.\n'
     instruction = inviteMessage(configMap,plugin_tag)
     if users.status_code!=200:
-        log=plugin_tag+' error: '+str(users.status_code)+str(users.content)+' Make sure if email doesn\'t exist already.\n'
-        instruction=log
+        if users.status_code == 401:
+          log=plugin_tag+' error: Invalid Papertrail api key entered.\n'
+          instruction=log
+        else:
+          log = plugin_tag + ' error: ' + str(users.status_code) + str(users.content) + ' Make sure if email doesn\'t exist already.\n'
+          instruction = log
+
     return getJsonResponse( 'Papertrail ' + plugin_tag[11:], email, log, instruction)
 
 def removeUser(email,configMap,allPermissions, plugin_tag):
 
     users = requests.get(getUrl(configMap, plugin_tag)+".json",
                          headers={'X-Papertrail-Token': getApiToken(configMap, plugin_tag)})
-    my_json = users.content.decode('utf8')
-    data = json.loads(my_json)
-    for element in data:
-        if element['email']==email:
-            id=element['id']
 
-    log = plugin_tag+': '+email+' removed from papertrail.\n'
-    instruction = email[:-13]+ removalMessage(configMap,plugin_tag)
-    try:
-        users = requests.delete(getUrl(configMap, plugin_tag)+"/"+str(id)+".json",
-                                headers={'X-Papertrail-Token': getApiToken(configMap, plugin_tag)})
-    except (UnboundLocalError):
-        log=plugin_tag+' '+ email+' does not exist, delete failed.\n'
+    if users.status_code!=200:
+        if users.status_code == 401:
+          log=plugin_tag+' error: Invalid Papertrail api key entered.\n'
+          instruction=log
+        else:
+          log = plugin_tag + ' error: ' + str(users.status_code) + str(users.content) + ' Make sure if email doesn\'t exist already.\n'
+          instruction = log
+    else:
+     my_json = users.content.decode('utf8')
+     data = json.loads(my_json)
+     for element in data:
+         if element['email']==email:
+             id=element['id']
+
+     log = plugin_tag+': '+email+' removed from papertrail.\n'
+     instruction = email[:-13]+ removalMessage(configMap,plugin_tag)
+     try:
+         users = requests.delete(getUrl(configMap, plugin_tag)+"/"+str(id)+".json",
+                                 headers={'X-Papertrail-Token': getApiToken(configMap, plugin_tag)})
+     except (UnboundLocalError):
+         log=plugin_tag+' '+ email+' does not exist, delete failed.\n'
 
 
     return getJsonResponse('Papertrail ' + plugin_tag[11:], email, log, instruction)
