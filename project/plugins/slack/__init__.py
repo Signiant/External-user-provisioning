@@ -18,8 +18,8 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
     if not 'error' in data and 'team' in data:
         teamId=data['team']['id']
 
-        log = "Slack: "+email[:-13]+" was removed from Slack.\n"
-        instruction = email[:-13] + removalMessage(configMap,plugin_tag)
+        log = "Slack: "+ email.split('@', 1)[0] +" was removed from Slack.\n"
+        instruction = email.split('@', 1)[0] + removalMessage(configMap,plugin_tag)
         try:
             #get user id
             userId= requests.get(	"https://slack.com/api/auth.findUser?token=" + getApiToken(configMap,plugin_tag)+"&email="+email+"&team="+teamId )

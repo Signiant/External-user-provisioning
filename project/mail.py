@@ -26,7 +26,7 @@ def emailOutput(email, configMap, pluginInstruction, arg):
     if arg == 'remove':
         email_to_addr = configMap['global']['smtp']['admin_email']
         email_subject = "User Provisioning Tool - User Removal"
-        content_title = configMap['global']['email_removal_message'].replace("<username>", email[:-13])
+        content_title = configMap['global']['email_removal_message'].replace("<username>", email.split('@', 1)[0])
 
     values = {}
     for plugin in pluginInstruction:

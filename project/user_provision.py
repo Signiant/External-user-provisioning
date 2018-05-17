@@ -16,6 +16,8 @@ from project import plugin
 
 imp.reload(plugin)
 
+registered = False
+
 
 def readConfigFile(path):
     configMap = []
@@ -35,7 +37,7 @@ def getDate():
 
 def getJsonResponse(plugin, email, log, instruction):
     return {"Plugin name": plugin,
-            "Log": (email[:-13] + " " + getpass.getuser() + " " + getDate().strftime("%Y-%m-%d %H:%M") + " | " + log),
+            "Log": (email.split('@', 1)[0] + " " + getpass.getuser() + " " + getDate().strftime("%Y-%m-%d %H:%M") + " | " + log),
             "Instruction": instruction}
 
 
@@ -52,7 +54,7 @@ def main():
                         required=False)
     args = parser.parse_args()
 
-    logging.basicConfig(filename='log_' + args.email[:-13] + '.log', level=logging.INFO)
+    logging.basicConfig(filename='log_' + args.email.split('@', 1)[0] + '.log', level=logging.INFO)
 
     configMap = readConfigFile(args.config)
 
@@ -74,23 +76,28 @@ def main():
     pluginInstruction = []
     if args.plugin is not None:
         for email in emails:
-            #    x = \
-            runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, availablePlugins, args.name,
-                       arg='add')
-            # changed here
-            #     if x != None:
-            print('sending email')
-            mail.emailOutput(email, configMap, pluginInstruction, arg='add')
+
+            runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, availablePlugins, args.name, arg='add')
+
+            if(registered == True):
+
+                print('\nsending email')
+                mail.emailOutput(email, configMap, pluginInstruction, arg='add')
 
     if args.remove is not None:
+
         for email in emails:
-            runPlugins(configMap, pluginsremove, email, allPermissions, pluginInstruction, availablePlugins, args.name,
-                       arg='remove')
-            print('sending email')
-            mail.emailOutput(email, configMap, pluginInstruction, arg='remove')
+
+            runPlugins(configMap, pluginsremove, email, allPermissions, pluginInstruction, availablePlugins, args.name, arg='remove')
+
+            if (registered == True):
+
+                print('sending email')
+                mail.emailOutput(email, configMap, pluginInstruction, arg='remove')
 
 
 def runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, availablePlugins, name, arg):
+    global registered
     for config_plugin in configMap['plugins']:
         plugin_tag = config_plugin['plugin'] + ':' + config_plugin['tag']
         pluginName = config_plugin['plugin']
@@ -98,16 +105,26 @@ def runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, ava
             if plugin_tag == requested_plugin:
                 if plugin_tag in availablePlugins:
                     plugin_handle = plugin.loadPlugin(pluginName)
-                    if arg == 'add':
-                        print("Running invite: %s  " % plugin_tag)
-                        json = (plugin_handle.inviteUser(email, configMap, allPermissions, plugin_tag, name))
-                    if arg == 'remove':
-                        print("Running remove: %s  " % plugin_tag)
-                        json = (plugin_handle.removeUser(email, configMap, allPermissions, plugin_tag))
-                    pluginInstruction.append(json)
 
-                    logging.info(json['Log'])
-                    print(json['Instruction'])
+                    if arg == 'add':
+                        print("\nRunning invite: %s  " % plugin_tag)
+                        json = (plugin_handle.inviteUser(email, configMap, allPermissions, plugin_tag, name))
+
+                    if arg == 'remove':
+                        print("\nRunning remove: %s  " % plugin_tag)
+                        json = (plugin_handle.removeUser(email, configMap, allPermissions, plugin_tag))
+
+                   # added getters with boolean values into all plugins for error checking purpose
+                    if(plugin_handle.done == True):
+
+                        pluginInstruction.append(json)
+                        logging.info(json['Log'])
+                        print(json['Instruction'])
+                        #if at least one plugin worked, email will be sent
+                        registered = True
+
+                    else:
+                        print("Could not " + arg + " '"+ name + "' using plugin '" + pluginName +"'\n")
 
 
 def getArgPlugins(pluginsString, configMap):
