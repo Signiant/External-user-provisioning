@@ -81,6 +81,10 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
 
     users = graphrbac_client.users.list();
     for user in users:
+
+
+        #Add in a // TODO comment that this :-29 looks REALLY shady...
+
         if user.user_principal_name[:-29]== email.split('@', 1)[0]:
             userID=user.object_id
             break

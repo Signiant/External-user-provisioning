@@ -16,9 +16,7 @@ from project import plugin
 
 imp.reload(plugin)
 
-registered = False
-
-
+#sdfgsdermn@gmail.com
 def readConfigFile(path):
     configMap = []
     try:
@@ -35,10 +33,12 @@ def getDate():
     return datetime.datetime.now()
 
 
-def getJsonResponse(plugin, email, log, instruction):
+def getJsonResponse(plugin, email, log, instruction, success):
     return {"Plugin name": plugin,
             "Log": (email.split('@', 1)[0] + " " + getpass.getuser() + " " + getDate().strftime("%Y-%m-%d %H:%M") + " | " + log),
-            "Instruction": instruction}
+            "Instruction": instruction,
+            "Success": success}
+
 
 
 def main():
@@ -77,27 +77,29 @@ def main():
     if args.plugin is not None:
         for email in emails:
 
-            runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, availablePlugins, args.name, arg='add')
-
-            if(registered == True):
+            if runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, availablePlugins, args.name, arg='add'):
 
                 print('\nsending email')
                 mail.emailOutput(email, configMap, pluginInstruction, arg='add')
+
+            else:
+                print("Email to a user was not sent. No plugins worked")
 
     if args.remove is not None:
 
         for email in emails:
 
-            runPlugins(configMap, pluginsremove, email, allPermissions, pluginInstruction, availablePlugins, args.name, arg='remove')
-
-            if (registered == True):
+           if runPlugins(configMap, pluginsremove, email, allPermissions, pluginInstruction, availablePlugins, args.name, arg='remove'):
 
                 print('sending email')
                 mail.emailOutput(email, configMap, pluginInstruction, arg='remove')
 
+           else:
+                print("User was not deleted from any of the accounts")
+
 
 def runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, availablePlugins, name, arg):
-    global registered
+    registered = False
     for config_plugin in configMap['plugins']:
         plugin_tag = config_plugin['plugin'] + ':' + config_plugin['tag']
         pluginName = config_plugin['plugin']
@@ -114,17 +116,20 @@ def runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, ava
                         print("\nRunning remove: %s  " % plugin_tag)
                         json = (plugin_handle.removeUser(email, configMap, allPermissions, plugin_tag))
 
-                   # added getters with boolean values into all plugins for error checking purpose
-                    if(plugin_handle.done == True):
+                    if json['Success']:
 
                         pluginInstruction.append(json)
                         logging.info(json['Log'])
                         print(json['Instruction'])
-                        #if at least one plugin worked, email will be sent
                         registered = True
 
                     else:
-                        print("Could not " + arg + " '"+ name + "' using plugin '" + pluginName +"'\n")
+                        print("Could not " + arg + " '" + name + "' using plugin '" + pluginName + "'\n")
+
+    if registered:
+        return True
+    else:
+        return False
 
 
 def getArgPlugins(pluginsString, configMap):
@@ -140,9 +145,6 @@ def getArgPlugins(pluginsString, configMap):
 
 if __name__ == "__main__":
     main()
-
-
-
 
 
 

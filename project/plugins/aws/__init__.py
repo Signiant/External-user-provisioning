@@ -5,14 +5,10 @@ import boto3
 from project.user_provision import getJsonResponse
 from project.plugin import inviteMessage, removalMessage, getGroups
 
-done = False
-
-def done(self):
-    return self._done
 
 def inviteUser(email, configMap,allPermissions, plugin_tag, name):
 
-    global done
+    done = False
 
     username = email.split('@', 1)[0]
 
@@ -46,9 +42,8 @@ def inviteUser(email, configMap,allPermissions, plugin_tag, name):
         client.create_user(UserName=username)
         done = True
 
-
     except:
-        log = plugin_tag + ' The user already exists'
+        log = plugin_tag + ' The user ' + username + ' already exists'
         instruction = log
         print(log)
 
@@ -58,12 +53,12 @@ def inviteUser(email, configMap,allPermissions, plugin_tag, name):
             UserName=username
         )
 
-    return getJsonResponse('AWS '+plugin_tag[4:],email, log, instruction)
+    return getJsonResponse('AWS '+plugin_tag[4:],email, log, instruction, done)
 
 
 def removeUser(email, configMap,allPermissions, plugin_tag):
 
-    global done
+    done = False
     #Deletes the specified IAM user. The user must not belong to any groups or have any access keys, signing certificates, or attached policies.
     for key in configMap['plugins']:
         if  key['plugin']+':'+key['tag']==plugin_tag:
@@ -99,7 +94,7 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
         # delete login profile
         try:
 
-            log = plugin_tag+': User ' +username+ ' ' + 'profile has been deleted\n'
+            log = plugin_tag+': User ' +username+ '. ' + 'profile has been deleted\n'
             instruction = log
             done = True
 
@@ -116,4 +111,4 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
         else:
             raise e
 
-    return getJsonResponse('AWS '+plugin_tag[4:],email, log, instruction)
+    return getJsonResponse('AWS '+plugin_tag[4:],email, log, instruction, done)
