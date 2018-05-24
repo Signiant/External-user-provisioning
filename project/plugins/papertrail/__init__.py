@@ -31,9 +31,6 @@ def inviteUser(email,configMap,allPermissions,plugin_tag, name):
 
     else:
 
-        #check return value of the invite
-        # it returns plugin['message_invite']
-
         instruction = inviteMessage(configMap, plugin_tag)
 
         if instruction == None:

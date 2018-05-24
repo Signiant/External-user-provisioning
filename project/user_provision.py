@@ -16,7 +16,6 @@ from project import plugin
 
 imp.reload(plugin)
 
-#sdfgsdermn@gmail.com
 def readConfigFile(path):
     configMap = []
     try:
@@ -83,7 +82,7 @@ def main():
                 mail.emailOutput(email, configMap, pluginInstruction, arg='add')
 
             else:
-                print("Email to a user was not sent. No plugins worked")
+                print("\nEmail to a user was not sent. No plugins worked")
 
     if args.remove is not None:
 
@@ -95,7 +94,7 @@ def main():
                 mail.emailOutput(email, configMap, pluginInstruction, arg='remove')
 
            else:
-                print("User was not deleted from any of the accounts")
+                print("\nUser was not deleted from any of the accounts")
 
 
 def runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, availablePlugins, name, arg):
@@ -122,9 +121,6 @@ def runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, ava
                         logging.info(json['Log'])
                         print(json['Instruction'])
                         registered = True
-
-                    else:
-                        print("Could not " + arg + " '" + name + "' using plugin '" + pluginName + "'\n")
 
     if registered:
         return True
