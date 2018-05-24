@@ -82,6 +82,7 @@ def inviteUser(email, configMap,allPermissions, plugin_tag, name):
 def removeUser(email, configMap,allPermissions, plugin_tag):
 
     done = False
+    cont = True
     groups = {}
     keys = {}
 
@@ -109,15 +110,20 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
 
     except client.exceptions.NoSuchEntityException:
         print(plugin_tag + ' error: ' + username + ' could not be deleted, because it does not exist')
+        cont = False
 
     except client.exceptions.ServiceFailureException:
         print(plugin_tag + ' error: ' + username + ' Service failure while deleting this user')
+        cont = False
 
     except ClientError:
         log = (plugin_tag + 'error:  ' + username + ' was not deleted')
         instruction = log
+        cont = False
 
-    for group in groups:
+    if cont == True:
+
+      for group in groups:
 
         try:
 
@@ -129,42 +135,42 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
         except client.exceptions.ServiceFailureException:
                          print(plugin_tag + ' error: ' + username + ' could not be removed from the group. Service failure')
 
-    try:
+      try:
 
          # remove access keys
         response = client.list_access_keys(UserName=username)
         keys = response.get('AccessKeyMetadata')
 
 
-    except client.exceptions.NoSuchEntityException:
+      except client.exceptions.NoSuchEntityException:
                 print(plugin_tag + ' error: Could not list access keys, ' + username + ' does not exist')
 
-    except client.exceptions.ServiceFailureException:
+      except client.exceptions.ServiceFailureException:
                 print(plugin_tag + ' error: ' + username + ' Service failure while listing access key')
 
-    except ClientError:
+      except ClientError:
                 log = (plugin_tag + username + ' error: could not list access keys')
                 instruction = log
                 print(log)
 
 
-    try:
+      try:
 
         for key in keys:
 
             client.delete_access_key(UserName=username, AccessKeyId=key.get('AccessKeyId'))
 
-    except client.exceptions.NoSuchEntityException:
+      except client.exceptions.NoSuchEntityException:
                 print(plugin_tag + ' error: Could not delete access key, ' + username + ' does not exist. ')
 
-    except client.exceptions.ServiceFailureException:
+      except client.exceptions.ServiceFailureException:
                 print(plugin_tag + ' error: ' + username + ' Service failure while deleting access key')
 
-    except ClientError:
+      except ClientError:
                 log = (plugin_tag + 'Could not delete access key of a user: ' + username)
                 instruction = log
 
-    try:
+      try:
 
         response = client.delete_user(UserName=username)
 
@@ -172,16 +178,16 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
         instruction = log
         done = True
 
-    except client.exceptions.NoSuchEntityException:
+      except client.exceptions.NoSuchEntityException:
             print(plugin_tag + 'error: ' + username +  ' could not be deleted, because it does not exist')
 
-    except client.exceptions.DeleteConflict:
+      except client.exceptions.DeleteConflict:
             print(plugin_tag + 'error: ' +  username + ' could not delete a resource that has attached subordinate entities')
 
-    except client.exceptions.ServiceFailureException:
+      except client.exceptions.ServiceFailureException:
             print(plugin_tag + 'error: ' + username + ' could not be deleted. Service failure')
 
-    except ClientError:
+      except ClientError:
             print(plugin_tag + 'error: ' +  username + ' could not be deleted')
 
 
