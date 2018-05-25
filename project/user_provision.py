@@ -75,30 +75,28 @@ def main():
     pluginInstruction = []
     if args.plugin is not None:
         for email in emails:
-
             if runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, availablePlugins, args.name, arg='add'):
-
                 print('\nsending email')
                 mail.emailOutput(email, configMap, pluginInstruction, arg='add')
-
             else:
-                print("\nEmail to a user was not sent. No plugins worked")
+                print("\nEmail was not sent to the end user. All plugins failed.")
 
     if args.remove is not None:
-
         for email in emails:
-
            if runPlugins(configMap, pluginsremove, email, allPermissions, pluginInstruction, availablePlugins, args.name, arg='remove'):
-
                 print('sending email')
                 mail.emailOutput(email, configMap, pluginInstruction, arg='remove')
-
            else:
-                print("\nUser was not deleted from any of the accounts")
+                print("\nUser was not deleted from any of the accounts. All plugins failed")
 
 
 def runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, availablePlugins, name, arg):
+    # we use registered to flag is ANY plugins worked
+    # If even one succeeded, we set registered to True and still send an email
+    # But we want to suppress sending the email if all plugins failed
+
     registered = False
+
     for config_plugin in configMap['plugins']:
         plugin_tag = config_plugin['plugin'] + ':' + config_plugin['tag']
         pluginName = config_plugin['plugin']
@@ -116,7 +114,6 @@ def runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, ava
                         json = (plugin_handle.removeUser(email, configMap, allPermissions, plugin_tag))
 
                     if json['Success']:
-
                         pluginInstruction.append(json)
                         logging.info(json['Log'])
                         print(json['Instruction'])
