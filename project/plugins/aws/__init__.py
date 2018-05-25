@@ -123,16 +123,14 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
 
     if cont == True:
 
-      for group in groups:
+      try:
+            for group in groups:
+                response = client.remove_user_from_group(GroupName=group.get('GroupName'), UserName=username)
 
-        try:
-
-            response = client.remove_user_from_group(GroupName=group.get('GroupName'), UserName=username)
-
-        except client.exceptions.NoSuchEntityException:
+      except client.exceptions.NoSuchEntityException:
                          print(plugin_tag + ' error: ' + username + ' could not be removed from the group, because the user does not exist')
 
-        except client.exceptions.ServiceFailureException:
+      except client.exceptions.ServiceFailureException:
                          print(plugin_tag + ' error: ' + username + ' could not be removed from the group. Service failure')
 
       try:
@@ -153,12 +151,13 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
                 instruction = log
                 print(log)
 
-
       try:
 
-        for key in keys:
-
-            client.delete_access_key(UserName=username, AccessKeyId=key.get('AccessKeyId'))
+          for key in keys:
+              response = client.delete_access_key(
+                  UserName=username,
+                  AccessKeyId=key.get('AccessKeyId')
+              )
 
       except client.exceptions.NoSuchEntityException:
                 print(plugin_tag + ' error: Could not delete access key, ' + username + ' does not exist. ')
@@ -170,6 +169,12 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
                 log = (plugin_tag + 'Could not delete access key of a user: ' + username)
                 instruction = log
 
+      # delete login profile
+      try:
+          response = client.delete_login_profile(UserName=username)
+      except:
+          pass
+      
       try:
 
         response = client.delete_user(UserName=username)
