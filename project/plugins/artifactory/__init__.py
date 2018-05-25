@@ -4,7 +4,7 @@ from project.plugin import inviteMessage, removalMessage
 
 def removeUser(email, configMap, allPermissions, plugin_tag):
     log = 'artifactory: '+ email+' removed alongside AD account \n'
-    instruction= email[:-13]+ removalMessage(configMap,plugin_tag)
+    instruction= email.split('@', 1)[0] + removalMessage(configMap,plugin_tag)
     return getJsonResponse('Artifactory', email, log, instruction)
 
 

@@ -14,7 +14,7 @@ def inviteUser(email,configMap,allPermissions, plugin_tag, name):
             url=plugin['url']
 
     data = {
-        "name": email[:-13], #username
+        "name": email.split('@', 1)[0], #username
         "password": "test",
         "emailAddress": email,
         "displayName": name,
@@ -28,14 +28,14 @@ def inviteUser(email,configMap,allPermissions, plugin_tag, name):
                'Content-Type': 'application/json'
                }
     create=requests.post(url+'/rest/api/2/user', headers=headers,auth=(user, password), data=data)
-    data={'name': email[:-13]}
+    data={'name': email.split('@', 1)[0]}
     data = json.dumps(data)
 
     groups = getCLIgroups(configMap, plugin_tag, allPermissions)
     for group in groups:
         add=requests.post(url+'/rest/api/2/group/user?groupname='+group, auth=(user, password),headers=headers, data=data )
 
-    log = 'Jira: ' + email[:-13] + ' added to ' + plugin_tag + '\n'
+    log = 'Jira: ' + email.split('@', 1)[0] + ' added to ' + plugin_tag + '\n'
     instruction = inviteMessage(configMap, plugin_tag)
     return getJsonResponse("Jira Server",email, log, instruction)
 
@@ -56,7 +56,7 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
     #get = requests.get(url+"/rest/api/2/user?username=" +email[:-13], headers=headers,auth=(user, password))
 
     #list org groups
-    getG= requests.get(url+"/rest/api/2/groups/picker?username=" +email[:-13], headers=headers,auth=(user, password))
+    getG= requests.get(url+"/rest/api/2/groups/picker?username=" + email.split('@', 1)[0], headers=headers,auth=(user, password))
     my_json = getG.content.decode('utf8')
     data = json.loads(my_json).get('groups')
     groupList=[d['name'] for d in data]
@@ -65,8 +65,8 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
     #Deactivating users is not enabled in the Api, users will be removed from all groups instead
     #https: // jira.atlassian.com / browse / JRASERVER - 44801
     for group in groupList:
-        delete=requests.delete(url+'/rest/api/2/group/user?groupname='+group+'&username=' +email[:-13], headers=headers,auth=(user, password))
+        delete=requests.delete(url+'/rest/api/2/group/user?groupname='+group+'&username=' + email.split('@', 1)[0], headers=headers,auth=(user, password))
 
-    log = plugin_tag + ': ' + email[:-13] + ' removed from jira.\n'
-    instruction = email[:-13] + removalMessage(configMap, plugin_tag).replace("<username>",email[:-13])
+    log = plugin_tag + ': ' + email.split('@', 1)[0] + ' removed from jira.\n'
+    instruction = email.split('@', 1)[0] + removalMessage(configMap, plugin_tag).replace("<username>",email.split('@', 1)[0])
     return getJsonResponse("Jira Server", email, log, instruction)

@@ -15,8 +15,8 @@ def inviteUser(email,configMap,allPermissions,plugin_tag, name):
         if plugin['plugin'] + ':' + plugin['tag'] == plugin_tag:
             azureConfig=plugin
 
-    log = 'Azure: ' + email[:-13] + ' added to ' + azureConfig["directory"] + '.\n'
-    instruction =  inviteMessage(configMap, plugin_tag).replace("<username>",email[:-13]+"@{}".format(azureConfig["directory"]) )
+    log = 'Azure: ' + email.split('@', 1)[0] + ' added to ' + azureConfig["directory"] + '.\n'
+    instruction =  inviteMessage(configMap, plugin_tag).replace("<username>", email.split('@', 1)[0] +"@{}".format(azureConfig["directory"]) )
     pw = 'Ab1'+''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase+string.digits, k=13))
 
     credentialsToken = UserPassCredentials(
@@ -32,10 +32,10 @@ def inviteUser(email,configMap,allPermissions,plugin_tag, name):
     try:
         user = graphrbac_client.users.create(
             UserCreateParameters(
-                user_principal_name=email[:-13]+"@{}".format(azureConfig["directory"]),
+                user_principal_name= email.split('@', 1)[0] +"@{}".format(azureConfig["directory"]),
                 account_enabled=True,
                 display_name=name,
-                mail_nickname=email[:-13],
+                mail_nickname= email.split('@', 1)[0],
                 password_profile=PasswordProfile(
                     password=pw,
                     force_change_password_next_login=True
@@ -55,14 +55,14 @@ def inviteUser(email,configMap,allPermissions,plugin_tag, name):
         for groupId in groupIDs:
             addGroup=graphrbac_client.groups.add_member(groupId, url)
     except:
-        log = 'Azure: failed to add, ' + email + ', user already exists  .\n'
+        log = 'error: Azure: failed to add, ' + email + ', user already exists  .\n'
         instruction = email + ' already exists.'
 
     return getJsonResponse("Azure Active Directory", email, log, instruction)
 
 def removeUser(email,configMap,allPermissions, plugin_tag):
-    log = plugin_tag + ': ' + email[:-13] + removalMessage(configMap, plugin_tag) + '\n'
-    instruction = email[:-13] + removalMessage(configMap, plugin_tag)
+    log = plugin_tag + ': ' + email.split('@', 1)[0] + removalMessage(configMap, plugin_tag) + '\n'
+    instruction = email.split('@', 1)[0] + removalMessage(configMap, plugin_tag)
 
     for plugin in configMap['plugins']:
         if plugin['plugin'] + ':' + plugin['tag'] == plugin_tag:
@@ -81,13 +81,17 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
 
     users = graphrbac_client.users.list();
     for user in users:
-        if user.user_principal_name[:-29]== email[:-13]:
+
+
+        #Add in a // TODO comment that this :-29 looks REALLY shady...
+
+        if user.user_principal_name[:-29]== email.split('@', 1)[0]:
             userID=user.object_id
             break
     try:
         graphrbac_client.users.delete(userID)
     except:
-        log = plugin_tag + ': ' + email[:-13] +  ' does not exist in Azure AD\n'
-        instruction = email[:-13] + ' does not exist in Azure AD'
+        log = plugin_tag + ': ' + email.split('@', 1)[0] +  'error: does not exist in Azure AD\n'
+        instruction = log
     return getJsonResponse("Azure Active Directory", email, log, instruction)
 

@@ -65,6 +65,6 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
          delMem= requests.delete("https://api.bitbucket.org/1.0/groups/"+configMap['global']['organization']+"/"+group.get('name').lower()+"/members/"+email+"?access_token="+access_token)
 
      log = 'BitBucket: '+email+' removed from team.\n'
-     instruction = email[:-13]+ removalMessage(configMap,plugin_tag)
+     instruction = email.split('@', 1)[0] + removalMessage(configMap,plugin_tag)
      return getJsonResponse('Bitbucket', email, log, instruction)
 
