@@ -129,71 +129,85 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
 
       except client.exceptions.NoSuchEntityException:
                          print(plugin_tag + ' error: ' + username + ' could not be removed from the group, because the user does not exist')
+                         cont = False
 
       except client.exceptions.ServiceFailureException:
                          print(plugin_tag + ' error: ' + username + ' could not be removed from the group. Service failure')
+                         cont = False
 
-      try:
+      if cont == True:
 
-         # remove access keys
-        response = client.list_access_keys(UserName=username)
-        keys = response.get('AccessKeyMetadata')
+          try:
+
+             # remove access keys
+            response = client.list_access_keys(UserName=username)
+            keys = response.get('AccessKeyMetadata')
 
 
-      except client.exceptions.NoSuchEntityException:
-                print(plugin_tag + ' error: Could not list access keys, ' + username + ' does not exist')
+          except client.exceptions.NoSuchEntityException:
+                    print(plugin_tag + ' error: Could not list access keys, ' + username + ' does not exist')
+                    cont = False
 
-      except client.exceptions.ServiceFailureException:
-                print(plugin_tag + ' error: ' + username + ' Service failure while listing access key')
+          except client.exceptions.ServiceFailureException:
+                    print(plugin_tag + ' error: ' + username + ' Service failure while listing access key')
+                    cont = False
 
-      except ClientError:
-                log = (plugin_tag + username + ' error: could not list access keys')
-                instruction = log
-                print(log)
+          except ClientError:
+                    log = (plugin_tag + username + ' error: could not list access keys')
+                    instruction = log
+                    print(log)
+                    cont = False
 
-      try:
+      if cont == True:
 
-          for key in keys:
-              response = client.delete_access_key(
-                  UserName=username,
-                  AccessKeyId=key.get('AccessKeyId')
-              )
+          try:
 
-      except client.exceptions.NoSuchEntityException:
-                print(plugin_tag + ' error: Could not delete access key, ' + username + ' does not exist. ')
+              for key in keys:
 
-      except client.exceptions.ServiceFailureException:
-                print(plugin_tag + ' error: ' + username + ' Service failure while deleting access key')
+                    response = client.delete_access_key(UserName=username, AccessKeyId=key.get('AccessKeyId'))
 
-      except ClientError:
-                log = (plugin_tag + 'Could not delete access key of a user: ' + username)
-                instruction = log
+          except client.exceptions.NoSuchEntityException:
+                    print(plugin_tag + ' error: Could not delete access key, ' + username + ' does not exist. ')
+                    cont = False
 
-      # delete login profile
-      try:
-          response = client.delete_login_profile(UserName=username)
-      except:
-          pass
-      
-      try:
+          except client.exceptions.ServiceFailureException:
+                    print(plugin_tag + ' error: ' + username + ' Service failure while deleting access key')
+                    cont = False
 
-        response = client.delete_user(UserName=username)
+          except ClientError:
+                    log = (plugin_tag + 'Could not delete access key of a user: ' + username)
+                    instruction = log
+                    cont = False
 
-        log = plugin_tag + ': User ' + username + 'profile has been deleted\n'
-        instruction = log
-        done = True
+          # this deletes user password if it exists. User profile cannot be deleted if a password is not deleted
+          try:
+              response = client.delete_login_profile(UserName=username)
+          except:
+              pass
 
-      except client.exceptions.NoSuchEntityException:
-            print(plugin_tag + 'error: ' + username +  ' could not be deleted, because it does not exist')
+          try:
 
-      except client.exceptions.DeleteConflict:
-            print(plugin_tag + 'error: ' +  username + ' could not delete a resource that has attached subordinate entities')
+            response = client.delete_user(UserName=username)
 
-      except client.exceptions.ServiceFailureException:
-            print(plugin_tag + 'error: ' + username + ' could not be deleted. Service failure')
+            log = plugin_tag + ': User ' + username + 'profile has been deleted\n'
+            instruction = log
+            done = True
 
-      except ClientError:
-            print(plugin_tag + 'error: ' +  username + ' could not be deleted')
+          except client.exceptions.NoSuchEntityException:
+                print(plugin_tag + 'error: ' + username +  ' could not be deleted, because it does not exist')
+                cont = False
+
+          except client.exceptions.DeleteConflict:
+                print(plugin_tag + 'error: ' +  username + ' could not delete a resource that has attached subordinate entities')
+                cont = False
+
+          except client.exceptions.ServiceFailureException:
+                print(plugin_tag + 'error: ' + username + ' could not be deleted. Service failure')
+                cont = False
+
+          except ClientError:
+                print(plugin_tag + 'error: ' +  username + ' could not be deleted')
+                cont = False
 
 
 
