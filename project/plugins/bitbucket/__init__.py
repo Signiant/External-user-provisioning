@@ -4,7 +4,6 @@ import requests
 from project.user_provision import getJsonResponse
 from project.plugin import inviteMessage, removalMessage, getGroups
 
-
 def getKey(configMap):
      for config_key in configMap['plugins']:
           if config_key['plugin']+':'+config_key['tag']  == 'bitbucket:prod':
@@ -15,56 +14,148 @@ def getSecret(configMap):
           if config_key['plugin']+':'+config_key['tag'] == 'bitbucket:prod':
                return config_key['secret']
 
+def requestCredentials(configMap, data):
+    try:
+        responce = requests.post("https://bitbucket.org/site/oauth2/access_token",
+                                   auth=(getKey(configMap), getSecret(configMap)), data=data)
+    except requests.ConnectionError:
+        print("Could not connect to Bitbucket")
+
+    return responce
+
+def userExists(allMembers, userName, cli_groups):
+
+    for group in allMembers:
+        if group['name'].lower() in cli_groups:
+            for user in group['members']:
+                if userName == user['username']:
+                    return True
+    return False
+
 
 def inviteUser(email,configMap,allPermissions, plugin_tag, name):
 
+     done = False
+     userName = email.split('@', 1)[0]
      #Get Authorization token
      data = {'grant_type': 'client_credentials'}
-     credential = requests.post("https://bitbucket.org/site/oauth2/access_token", auth=(getKey(configMap),getSecret(configMap)), data=data)
-     my_json = credential.content.decode('utf8')
-     data = json.loads(my_json)
-     access_token=data.get('access_token')
 
-     cli_groups = []
-     for permission in allPermissions:
-         thisPermissions = ast.literal_eval(permission)
-         if thisPermissions['plugin'] == plugin_tag:
-             del thisPermissions['plugin']
-             cli_groups = list(thisPermissions.values())
-             break
+     credentials = requestCredentials(configMap, data)
+     log = errorCheck(credentials, plugin_tag, userName)
 
-     if len(cli_groups) == 0:
-         cli_groups = getGroups(configMap,plugin_tag)
+     if log:
+         print(log)
+         instruction = log
+     else:
+         my_json = credentials.content.decode('utf8')
+         data = json.loads(my_json)
+         access_token=data.get('access_token')
 
-     for group in cli_groups:
-         invGroup = requests.put(
-             "https://api.bitbucket.org/1.0/users/"+configMap['global']['organization']+"/invitations/"
-             + email + "/"+configMap['global']['organization']+"/"+group+ "?access_token=" + access_token)
+         cli_groups = []
+         for permission in allPermissions:
+             thisPermissions = ast.literal_eval(permission)
+             if thisPermissions['plugin'] == plugin_tag:
+                 del thisPermissions['plugin']
+                 cli_groups = list(thisPermissions.values())
+                 break
 
+         if len(cli_groups) == 0:
+             cli_groups = getGroups(configMap,plugin_tag)
 
-     log = 'BitBucket: Email invite sent from Bitbucket.\n'
-     instruction = inviteMessage(configMap,plugin_tag)
-     return getJsonResponse('Bitbucket', email, log, instruction)
+         #get all groups
+         groups=requests.get("https://api.bitbucket.org/1.0/groups/"+configMap['global']['organization']+"?access_token="+access_token)
+         my_json = groups.content.decode('utf8')
+         allMembers = json.loads(my_json)
+
+         if userExists(allMembers, userName, cli_groups):
+             log  = ("The user " + userName + " cannot be invited. The user already exists")
+             instruction = log
+             print(log)
+
+         else:
+             for group in cli_groups:
+                    invGroup = requests.put(
+                         "https://api.bitbucket.org/1.0/users/"+configMap['global']['organization']+"/invitations/"
+                         + email + "/"+configMap['global']['organization']+"/"+group.lower() + "?access_token=" + access_token)
+
+             log = errorCheck(invGroup, plugin_tag, userName)
+
+             if log:
+                print(log)
+                instruction = log
+             else:
+                log = 'BitBucket: Email invite sent from Bitbucket.\n'
+                instruction = inviteMessage(configMap,plugin_tag)
+                done = True
+
+     return getJsonResponse('Bitbucket', email, log, instruction, done)
 
 def removeUser(email,configMap,allPermissions, plugin_tag):
-     #Get Authorization token
-     key=getKey(configMap)
+
+     done = False
+     userName = email.split('@', 1)[0]
      data = {'grant_type': 'client_credentials'}
-     credential = requests.post("https://bitbucket.org/site/oauth2/access_token", auth=(getKey(configMap),getSecret(configMap)), data=data)
-     my_json = credential.content.decode('utf8')
-     data = json.loads(my_json)
-     access_token=data.get('access_token')
+     cli_groups = getGroups(configMap, plugin_tag)
 
-     #get all groups
-     groups=requests.get("https://api.bitbucket.org/1.0/groups/"+configMap['global']['organization']+"?access_token="+access_token)
-     my_json=groups.content.decode('utf8')
-     data = json.loads(my_json)
+     credential = requestCredentials(configMap, data)
+     log = errorCheck(credential, plugin_tag, userName)
 
-     # Remove from groups
-     for group in data:
-         delMem= requests.delete("https://api.bitbucket.org/1.0/groups/"+configMap['global']['organization']+"/"+group.get('name').lower()+"/members/"+email+"?access_token="+access_token)
+     if log:
+         print(log)
+         instruction = log
+     else:
+         my_json = credential.content.decode('utf8')
+         data = json.loads(my_json)
+         access_token=data.get('access_token')
 
-     log = 'BitBucket: '+email+' removed from team.\n'
-     instruction = email.split('@', 1)[0] + removalMessage(configMap,plugin_tag)
-     return getJsonResponse('Bitbucket', email, log, instruction)
+         #get all groups
+         groups=requests.get("https://api.bitbucket.org/1.0/groups/"+configMap['global']['organization']+"?access_token="+access_token)
+         log = errorCheck(credential, plugin_tag, userName)
+
+         if log:
+             print(log)
+             instruction = log
+         else:
+             my_json=groups.content.decode('utf8')
+             data = json.loads(my_json)
+
+         if userExists(data, userName, cli_groups) == False:
+             log = ("The user " + userName + " does not exist, delete failed")
+             instruction = log
+             print(log)
+
+         else:
+             # Remove from groups
+             for group in data:
+                delMem= requests.delete("https://api.bitbucket.org/1.0/groups/"+configMap['global']['organization']+
+                                        "/"+group.get('name').lower()+"/members/"+email+"?access_token="+access_token)
+             log = errorCheck(delMem, plugin_tag, userName)
+             if log:
+                instruction = log
+                print(log)
+             else:
+                log = email.split('@', 1)[0] + removalMessage(configMap, plugin_tag) + '\n'
+                instruction = log
+                done = True
+
+     return getJsonResponse('Bitbucket', email, log, instruction, done)
+
+
+def errorCheck(response, plugin_tag, name):
+
+    log = None
+
+    if response.status_code > 204 :
+        if response.status_code == 401:
+            log = plugin_tag + ' error: HTML link is broken. Plugin did not work'
+        elif response.status_code == 404:
+            log = plugin_tag + ' error: ' + str(response.status_code) + ' Make sure config.yaml is set up correctly '
+        elif response.status_code == 400:
+            log = plugin_tag + ' error: ' + str(response.status_code) + ' Wrong access key or secret key'
+        else:
+            log = plugin_tag + ' error: ' + str(response.status_code) + ' User could not be registered'
+
+    return log
+
+
 
