@@ -64,29 +64,49 @@ def inviteUser(email,configMap,allPermissions, plugin_tag, name):
 
          #get all groups
          groups=requests.get("https://api.bitbucket.org/1.0/groups/"+configMap['global']['organization']+"?access_token="+access_token)
-         my_json = groups.content.decode('utf8')
-         allMembers = json.loads(my_json)
+         log = errorCheck(groups, plugin_tag, userName)
 
-         if userExists(allMembers, userName, cli_groups):
-             log  = ("The user " + userName + " cannot be invited. The user already exists")
-             instruction = log
+         if log:
              print(log)
-
+             instruction = log
          else:
-             for group in cli_groups:
-                    invGroup = requests.put(
-                         "https://api.bitbucket.org/1.0/users/"+configMap['global']['organization']+"/invitations/"
-                         + email + "/"+configMap['global']['organization']+"/"+group.lower() + "?access_token=" + access_token)
+             my_json = groups.content.decode('utf8')
+             allMembers = json.loads(my_json)
 
-             log = errorCheck(invGroup, plugin_tag, userName)
+                #first to check if a user already is in the group, in which case the invitation is not sent
+             if userExists(allMembers, userName, cli_groups):
+                 log  = ("The user " + userName + " cannot be invited. The user already exists")
+                 instruction = log
+                 print(log)
 
-             if log:
-                print(log)
-                instruction = log
              else:
-                log = 'BitBucket: Email invite sent from Bitbucket.\n'
-                instruction = inviteMessage(configMap,plugin_tag)
-                done = True
+                 #second to check if a user already received an invitation by email, but did not yet accept it,
+                 #in which case the invitation is not set
+                 for group in cli_groups:
+                     checkingInvitation = requests.get(
+                         "https://api.bitbucket.org/1.0/users/"+configMap['global']['organization']+"/invitations/"
+                             + email + "?access_token=" + access_token)
+
+                 if checkingInvitation.reason == 'OK':
+                     log = "The invitation to the user " +userName+ " has been already sent"
+                     instruction =log
+                     print(log)
+                 else:
+                     #invitaion is sent
+                     for group in cli_groups:
+                            invGroup = requests.put(
+                                 "https://api.bitbucket.org/1.0/users/"+configMap['global']['organization']+"/invitations/"
+                                 + email + "/"+configMap['global']['organization']+"/"+group.lower() + "?access_token=" + access_token)
+
+                     log = errorCheck(invGroup, plugin_tag, userName)
+
+                     if log:
+                        print(log)
+                        instruction = log
+                     else:
+                        log = 'BitBucket: Email invite sent from Bitbucket.\n'
+                        instruction = inviteMessage(configMap,plugin_tag)
+                        done = True
 
      return getJsonResponse('Bitbucket', email, log, instruction, done)
 
@@ -119,6 +139,7 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
              my_json=groups.content.decode('utf8')
              data = json.loads(my_json)
 
+         #check is a user is not in the group in which case the user is not deleted
          if userExists(data, userName, cli_groups) == False:
              log = ("The user " + userName + " does not exist, delete failed")
              instruction = log
