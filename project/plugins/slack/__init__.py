@@ -31,6 +31,8 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
         if 'fatal_error' in team.text:
             log = plugin_tag + ' unexpected error: for user: ' + userName + '. could not be removed'
 
+    elif 'team' not in data:
+        log = plugin_tag + ' error: for user: ' + userName + '. Is not in the team'
     else:
         teamId=data['team']['id']
 
@@ -42,7 +44,7 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
         else:
             my_json = userId.content.decode('utf8')
             data = json.loads(my_json)
-            slackUserID = data['user_id'] 
+            slackUserID = data['user_id']
             try:
             #disable user
                 user = requests.post("https://slack.com/api/users.admin.setInactive" + "?token=" + getApiToken(configMap,plugin_tag) + "&user="+slackUserID)
