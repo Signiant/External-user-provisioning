@@ -42,7 +42,7 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
         else:
             my_json = userId.content.decode('utf8')
             data = json.loads(my_json)
-            slackUserID = data['user_id']
+            slackUserID = data['user_id'] 
             try:
             #disable user
                 user = requests.post("https://slack.com/api/users.admin.setInactive" + "?token=" + getApiToken(configMap,plugin_tag) + "&user="+slackUserID)
