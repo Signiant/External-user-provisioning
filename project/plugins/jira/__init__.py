@@ -33,9 +33,9 @@ def inviteUser(email,configMap,allPermissions, plugin_tag, name):
     create = requests.post(url + '/rest/api/2/user', headers=headers, auth=(user, password), data=data)
     if create.status_code > 201:
         if create.status_code == 400:
-            log = plugin_tag + ' error: User already exists. Coudl not create user ' + username
+            log = plugin_tag + ' error: User already exists. Could not create user ' + username
         elif create.status_code == 401:
-            log = plugin_tag + ' error: User ' + name + ' is not authenticated'
+            log = plugin_tag + ' error: You are not authenticated to create a user'
         elif create.status_code == 403:
             log = plugin_tag + ' error: ' + str(
                 create.status_code) + '  You don\'t have permission to create the user'
@@ -56,7 +56,7 @@ def inviteUser(email,configMap,allPermissions, plugin_tag, name):
             if add.status_code == 400:
                 log = plugin_tag + ": user " + username+ " requested an empty group name or the user already belongs to the group"
             elif add.status_code == 401:
-                log = plugin_tag + ": current user " + username + " is not authenticated"
+                log = plugin_tag + ": error: You are not authenticated to complete this action"
             elif add.status_code == 403:
                 log = plugin_tag + ": error: you do not have administrator permissions to add the user " + username
             elif add.status_code == 404:
@@ -111,7 +111,7 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
                 if delete.status_code == 400:
                     log = plugin_tag + ": user " + username + " requested an empty group name"
                 elif delete.status_code == 401:
-                    log = plugin_tag + ": current user " + username + " is not authenticated"
+                    log = plugin_tag + ": error: You are not authenticated to complete this action"
                 elif delete.status_code == 403:
                     log = plugin_tag + ": error: you do not have administrator permissions to remove the user from the group" + username
                 elif delete.status_code == 404:
