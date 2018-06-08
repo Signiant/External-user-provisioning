@@ -62,7 +62,7 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
         data = json.loads(my_json)
 
         for element in data:
-             if element['email']==email:
+             if element['email'].lower()==email.lower():
                  id=element['id']
 
         try:

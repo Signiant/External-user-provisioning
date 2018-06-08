@@ -56,7 +56,7 @@ def inviteUser(email,configMap,allPermissions, plugin_tag, name):
             if add.status_code == 400:
                 log = plugin_tag + ": user " + username+ " requested an empty group name or the user already belongs to the group"
             elif add.status_code == 401:
-                log = plugin_tag + ": current user " + username + " is not authenticated"
+                log = plugin_tag + ": error: You are not authenticated to complete this action"
             elif add.status_code == 403:
                 log = plugin_tag + ": error: you do not have administrator permissions to add the user " + username
             elif add.status_code == 404:
@@ -94,7 +94,7 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
 
     #list org groups
     #status 200 is Returned even if no groups match the given substring
-    getG= requests.get(url+"/rest/api/2/groups/picker?username=" + email.split('@', 1)[0], headers=headers,auth=(user, password))
+    getG= requests.get(url+"/rest/api/2/groups/picker?username=" + username, headers=headers,auth=(user, password))
 
     if getG.status_code > 200:
             log = plugin_tag + ": unexpected error while listing all the groups"
@@ -111,7 +111,8 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
                 if delete.status_code == 400:
                     log = plugin_tag + ": user " + username + " requested an empty group name"
                 elif delete.status_code == 401:
-                    log = plugin_tag + ": current user " + username + " is not authenticated"
+                    log = plugin_tag + ": error: You are not authenticated to complete this action"
+
                 elif delete.status_code == 403:
                     log = plugin_tag + ": error: you do not have administrator permissions to remove the user from the group" + username
                 elif delete.status_code == 404:

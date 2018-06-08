@@ -17,9 +17,9 @@ def getSecret(configMap):
 def userExists(allMembers, userName, cli_groups):
 
     for group in allMembers:
-        if group['name'].lower() in cli_groups:
+        if group['name'] in cli_groups:
             for user in group['members']:
-                if userName == user['username']:
+                if userName.lower() == user['username'].lower():
                     return True
     return False
 
