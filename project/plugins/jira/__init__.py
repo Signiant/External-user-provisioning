@@ -4,8 +4,10 @@ import json
 from project.user_provision import getJsonResponse
 from project.plugin import inviteMessage, removalMessage, getCLIgroups
 
-
 def inviteUser(email,configMap,allPermissions, plugin_tag, name):
+    done = False
+    username = email.split('@', 1)[0]
+    instruction = ''
 
     for plugin in configMap['plugins']:
         if plugin['plugin'] + ':' + plugin['tag'] == plugin_tag:
@@ -14,7 +16,7 @@ def inviteUser(email,configMap,allPermissions, plugin_tag, name):
             url=plugin['url']
 
     data = {
-        "name": email.split('@', 1)[0], #username
+        "name": username, #username
         "password": "test",
         "emailAddress": email,
         "displayName": name,
@@ -27,19 +29,54 @@ def inviteUser(email,configMap,allPermissions, plugin_tag, name):
     headers = {'Accept':'application/json',
                'Content-Type': 'application/json'
                }
-    create=requests.post(url+'/rest/api/2/user', headers=headers,auth=(user, password), data=data)
-    data={'name': email.split('@', 1)[0]}
-    data = json.dumps(data)
+    #create a user
+    create = requests.post(url + '/rest/api/2/user', headers=headers, auth=(user, password), data=data)
+    if create.status_code > 201:
+        if create.status_code == 400:
+            log = plugin_tag + ' error: User already exists. Coudl not create user ' + username
+        elif create.status_code == 401:
+            log = plugin_tag + ' error: User ' + name + ' is not authenticated'
+        elif create.status_code == 403:
+            log = plugin_tag + ' error: ' + str(
+                create.status_code) + '  You don\'t have permission to create the user'
+        else:
+            log = plugin_tag + ' error: ' + str(
+                create.status_code) + ' Unexpected error. User ' + name + ' was not registered'
 
-    groups = getCLIgroups(configMap, plugin_tag, allPermissions)
-    for group in groups:
-        add=requests.post(url+'/rest/api/2/group/user?groupname='+group, auth=(user, password),headers=headers, data=data )
+    else:
+        data={'name': username}
+        data = json.dumps(data)
 
-    log = 'Jira: ' + email.split('@', 1)[0] + ' added to ' + plugin_tag + '\n'
-    instruction = inviteMessage(configMap, plugin_tag)
-    return getJsonResponse("Jira Server",email, log, instruction)
+        groups = getCLIgroups(configMap, plugin_tag, allPermissions)
+        #add user to the group
+        for group in groups:
+            add=requests.post(url+'/rest/api/2/group/user?groupname='+group, auth=(user, password),headers=headers, data=data )
+
+        if add.status_code > 201:
+            if add.status_code == 400:
+                log = plugin_tag + ": user " + username+ " requested an empty group name or the user already belongs to the group"
+            elif add.status_code == 401:
+                log = plugin_tag + ": current user " + username + " is not authenticated"
+            elif add.status_code == 403:
+                log = plugin_tag + ": error: you do not have administrator permissions to add the user " + username
+            elif add.status_code == 404:
+                log = plugin_tag + ": the requested group " + group + " was not found or requested user " + username+ " was not found"
+            else:
+                log = plugin_tag + ": unexpected error. User " + username + " could not be added to the group"
+        else:
+
+            log = 'Jira: ' + username + ' added to ' + plugin_tag + '\n'
+            instruction = inviteMessage(configMap, plugin_tag)
+            done = True
+    print(log)
+    return getJsonResponse("Jira Server",email, log, instruction, done)
 
 def removeUser(email, configMap,allPermissions, plugin_tag):
+    done = False
+    cont = False
+    username = email.split('@', 1)[0]
+    log = ''
+    instruction = ''
 
     for plugin in configMap['plugins']:
         if plugin['plugin'] + ':' + plugin['tag'] == plugin_tag:
@@ -56,17 +93,37 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
     #get = requests.get(url+"/rest/api/2/user?username=" +email[:-13], headers=headers,auth=(user, password))
 
     #list org groups
+    #status 200 is Returned even if no groups match the given substring
     getG= requests.get(url+"/rest/api/2/groups/picker?username=" + email.split('@', 1)[0], headers=headers,auth=(user, password))
-    my_json = getG.content.decode('utf8')
-    data = json.loads(my_json).get('groups')
-    groupList=[d['name'] for d in data]
 
+    if getG.status_code > 200:
+            log = plugin_tag + ": unexpected error while listing all the groups"
+    else:
+        my_json = getG.content.decode('utf8')
+        data = json.loads(my_json).get('groups')
+        groupList=[d['name'] for d in data]
 
-    #Deactivating users is not enabled in the Api, users will be removed from all groups instead
-    #https: // jira.atlassian.com / browse / JRASERVER - 44801
-    for group in groupList:
-        delete=requests.delete(url+'/rest/api/2/group/user?groupname='+group+'&username=' + email.split('@', 1)[0], headers=headers,auth=(user, password))
+        #Deactivating users is not enabled in the Api, users will be removed from all groups instead
+        #https: // jira.atlassian.com / browse / JRASERVER - 44801
+        for group in groupList:
+            delete=requests.delete(url+'/rest/api/2/group/user?groupname='+group+'&username=' + username, headers=headers,auth=(user, password))
+            if delete.status_code > 200:
+                if delete.status_code == 400:
+                    log = plugin_tag + ": user " + username + " requested an empty group name"
+                elif delete.status_code == 401:
+                    log = plugin_tag + ": current user " + username + " is not authenticated"
+                elif delete.status_code == 403:
+                    log = plugin_tag + ": error: you do not have administrator permissions to remove the user from the group" + username
+                elif delete.status_code == 404:
+                    log = plugin_tag + ": the requested group " + group + " was not found or requested user " + username + " was not found"
+                else:
+                    log = plugin_tag + ": unexpected error. User " + username + " could not be added to the group"
+            else:
+                cont = True
+        if cont:
 
-    log = plugin_tag + ': ' + email.split('@', 1)[0] + ' removed from jira.\n'
-    instruction = email.split('@', 1)[0] + removalMessage(configMap, plugin_tag).replace("<username>",email.split('@', 1)[0])
-    return getJsonResponse("Jira Server", email, log, instruction)
+            log = plugin_tag + ': ' + username + ' removed from jira.'
+            instruction = username + removalMessage(configMap, plugin_tag).replace("<username>",username) + '\n'
+            done = True
+    print(log)
+    return getJsonResponse("Jira Server", email, log, instruction, done)
