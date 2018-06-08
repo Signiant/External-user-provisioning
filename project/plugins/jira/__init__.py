@@ -94,7 +94,7 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
 
     #list org groups
     #status 200 is Returned even if no groups match the given substring
-    getG= requests.get(url+"/rest/api/2/groups/picker?username=" + email.split('@', 1)[0], headers=headers,auth=(user, password))
+    getG= requests.get(url+"/rest/api/2/groups/picker?username=" + username, headers=headers,auth=(user, password))
 
     if getG.status_code > 200:
             log = plugin_tag + ": unexpected error while listing all the groups"

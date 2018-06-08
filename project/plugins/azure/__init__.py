@@ -61,12 +61,12 @@ def inviteUser(email,configMap,allPermissions,plugin_tag, name):
         done = True
 
     except GraphErrorException:
-        log = 'error: Azure: failed to add, ' + email + ', user already exists'
-        instruction = email + ' already exists.'
+        log = 'error: Azure: failed to add ' + userName + ', user already exists'
+        instruction = log
         print(log)
 
     except:
-        log = 'error: Azure: failed to add, ' + email + ', unexpected error'
+        log = 'error: Azure: failed to add ' + userName + ', unexpected error'
         instruction = log
         print(log)
 
@@ -97,7 +97,7 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
 
     users = graphrbac_client.users.list();
     for user in users:
-        if user.user_principal_name.split('@', 1)[0]== userName:
+        if user.user_principal_name.split('@', 1)[0].lower()== userName.lower():
             userID=user.object_id
             cont = True
             break
@@ -107,7 +107,13 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
             graphrbac_client.users.delete(userID)
             done = True
         except GraphErrorException:
-            print("The user " + userName + " does not exist or one of its queried reference-property objects are not present")
+            log = "The user " + userName + " does not exist or one of its queried reference-property objects are not present"
+            instruction = log
+            print(log)
+        except:
+            log = 'error: Azure: failed to remove ' + userName + ', unexpected error'
+            instruction = log
+            print(log)
     else:
         log = "user " + userName + " is not in the group. Could not be removed"
         instruction = log
