@@ -7,17 +7,19 @@ from oauth2client import clientsecrets
 from apiclient import discovery
 # from oauth2client import clientsecrets
 
-def createSheet(creds):
+def createSheet(creds, email):
+
+    fileName = email.split('@', 1)[0] + ' - ENTRY'
 
     SHEETS = discovery.build('sheets', 'v4', http=creds.authorize(Http()))
-    data = {'properties': {'title': 'Test'}} # replace with user name
+    data = {'properties': {'title': fileName}} # replace with user name
     sheetCreated = SHEETS.spreadsheets().create(body=data).execute()
     if not sheetCreated:
         print("Unexpected error: sheet could not be created")
     else:
         return sheetCreated
 
-def writeDataToSheet(SPREADSHEET_ID, service, email):
+def writeHeaderColumnNamesToSheet(SPREADSHEET_ID, service, email):
     range1 = 'A1:H14'
     range2 = 'A7:H20'
     values1 = [
@@ -27,8 +29,8 @@ def writeDataToSheet(SPREADSHEET_ID, service, email):
             'The following systems require action taken when a new hire is onboarded or when there is an employee exit.  Please clone per new hire or exit.\n',
             '\n'
             "ROLE: Product Marketing Manager",
-            "Email:",  # add user vemail
-            "AD Login:",  # add user name
+            "Email:  " + email,  # add user vemail
+            "AD Login:  " + email.split('@', 1)[0],  # add user name
             "\n",
         ],
     ]
@@ -36,7 +38,7 @@ def writeDataToSheet(SPREADSHEET_ID, service, email):
     # to add values here:
     values2 = [
         [
-            'Tool', 'Manual', 'Plugin:tag', 'User Created', 'Date In', 'Admin', 'Date Out', 'Admin',
+            'Update Method', 'Plugin:tag', 'User Created', 'Date In', 'Admin', 'Date Out', 'Admin',
 
         ],
     ]
@@ -63,8 +65,15 @@ def writeDataToSheet(SPREADSHEET_ID, service, email):
 
     return valuesUpdated
 
+def writeRowsToSheet():
 
-def mainFunction(email):
+    return None
+
+
+def initialize():
+
+    #I'm hard coding it now, but email will be passed with each plugin
+    email = "user-prov-dev@signiant.com"
     cont = True
 
     SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
@@ -89,10 +98,10 @@ def mainFunction(email):
     if cont:
 
         service = build('sheets', 'v4', http=creds.authorize(Http()))
-        sheet = createSheet(creds)
+        sheet = createSheet(creds, email)
 
         SPREADSHEET_ID = sheet['spreadsheetId']
-        # to write data to a spreadsheet:
-        result = writeDataToSheet(SPREADSHEET_ID, service, email)
+        # to write pattern data to a spreadsheet:
+        writeHeaderColumnNamesToSheet(SPREADSHEET_ID, service, email)
 
-    return result
+    return SPREADSHEET_ID

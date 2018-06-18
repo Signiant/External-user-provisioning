@@ -76,17 +76,19 @@ def main():
     pluginsremove = getArgPlugins(args.remove, configMap)
     emails = [x.strip() for x in args.email.split(',')]
 
+    userSpreadSheet = spreadsheet.initialize()
+
     pluginInstruction = []
     if args.plugin is not None:
         for email in emails:
             if runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, availablePlugins, args.name, arg='add'):
                 print('\nsending email')
                 mail.emailOutput(email, configMap, pluginInstruction, arg='add')
-                createUserSpreadSheet = spreadsheet.mainFunction(email)
-                if createUserSpreadSheet:
-                    print("\n Google spreadsheet for the user " + email.split('@', 1)[0] + " has been created")
-                else:
-                    print("\n Error: Could not create a google spreadsheet for a user " +  email.split('@', 1)[0])
+                # createUserSpreadSheet = spreadsheet.initialize(email)
+                # if createUserSpreadSheet:
+                #     print("\n Google spreadsheet for the user " + email.split('@', 1)[0] + " has been created")
+                # else:
+                #     print("\n Error: Could not create a google spreadsheet for a user " +  email.split('@', 1)[0])
 
             else:
                 print("\nEmail was not sent to the end user. All plugins failed.")
