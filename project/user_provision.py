@@ -11,11 +11,9 @@ import azure
 import msrestazure
 import azure.graphrbac
 # internal modules
-# from project import mail
-# from project import plugin
+from project import mail
+from project import plugin
 
-import mail
-import plugin
 #import spreadsheet
 
 imp.reload(plugin)
