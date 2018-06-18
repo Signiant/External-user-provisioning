@@ -16,7 +16,7 @@ import azure.graphrbac
 
 import mail
 import plugin
-import spreadsheet
+#import spreadsheet
 
 imp.reload(plugin)
 
@@ -76,19 +76,12 @@ def main():
     pluginsremove = getArgPlugins(args.remove, configMap)
     emails = [x.strip() for x in args.email.split(',')]
 
-    userSpreadSheet = spreadsheet.initialize()
-
     pluginInstruction = []
     if args.plugin is not None:
         for email in emails:
             if runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, availablePlugins, args.name, arg='add'):
                 print('\nsending email')
                 mail.emailOutput(email, configMap, pluginInstruction, arg='add')
-                # createUserSpreadSheet = spreadsheet.initialize(email)
-                # if createUserSpreadSheet:
-                #     print("\n Google spreadsheet for the user " + email.split('@', 1)[0] + " has been created")
-                # else:
-                #     print("\n Error: Could not create a google spreadsheet for a user " +  email.split('@', 1)[0])
 
             else:
                 print("\nEmail was not sent to the end user. All plugins failed.")
@@ -120,6 +113,7 @@ def runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, ava
                     if arg == 'add':
                         print("\nRunning invite: %s  " % plugin_tag)
                         json = (plugin_handle.inviteUser(email, configMap, allPermissions, plugin_tag, name))
+                       # spreadsheet.initialize(plugin_tag, configMap, email)
 
                     if arg == 'remove':
                         print("\nRunning remove: %s  " % plugin_tag)
