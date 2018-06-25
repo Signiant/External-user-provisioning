@@ -48,8 +48,9 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
             try:
             #disable user
                 user = requests.post("https://slack.com/api/users.admin.setInactive" + "?token=" + getApiToken(configMap,plugin_tag) + "&user="+slackUserID)
-                log = "Slack: " + userName + " was removed from Slack.\n"
-                instruction = userName + removalMessage(configMap, plugin_tag)
+                log = plugin_tag + ": username " + userName + " has been deactivated\n"
+                instruction = log
+                print(log)
                 done = True
             except Exception as error:
                 log = 'Slack: Remove from slack error: '+ userName+' could not be removed'
