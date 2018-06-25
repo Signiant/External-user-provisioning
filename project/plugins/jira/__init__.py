@@ -33,41 +33,53 @@ def inviteUser(email,configMap,allPermissions, plugin_tag, name):
     create = requests.post(url + '/rest/api/2/user', headers=headers, auth=(user, password), data=data)
     if create.status_code > 201:
         if create.status_code == 400:
-            log = plugin_tag + ' error: User already exists. Coudl not create user ' + username
+            log = plugin_tag + ' error: User ' + username+ ' already exists. The user will be added to the group '
+            instruction = log
+            print(log)
         elif create.status_code == 401:
             log = plugin_tag + ' error: User ' + name + ' is not authenticated'
+            instruction = log
+            print(log)
         elif create.status_code == 403:
             log = plugin_tag + ' error: ' + str(
                 create.status_code) + '  You don\'t have permission to create the user'
+            instruction = log
+            print(log)
         else:
             log = plugin_tag + ' error: ' + str(
                 create.status_code) + ' Unexpected error. User ' + name + ' was not registered'
+            instruction = log
+            print(log)
 
     else:
-        data={'name': username}
-        data = json.dumps(data)
 
-        groups = getCLIgroups(configMap, plugin_tag, allPermissions)
-        #add user to the group
-        for group in groups:
-            add=requests.post(url+'/rest/api/2/group/user?groupname='+group, auth=(user, password),headers=headers, data=data )
+        log = plugin_tag + ' User ' + username + ' has been created'
+        print(log)
 
-        if add.status_code > 201:
-            if add.status_code == 400:
-                log = plugin_tag + ": user " + username+ " requested an empty group name or the user already belongs to the group"
-            elif add.status_code == 401:
-                log = plugin_tag + ": error: You are not authenticated to complete this action"
-            elif add.status_code == 403:
-                log = plugin_tag + ": error: you do not have administrator permissions to add the user " + username
-            elif add.status_code == 404:
-                log = plugin_tag + ": the requested group " + group + " was not found or requested user " + username+ " was not found"
-            else:
-                log = plugin_tag + ": unexpected error. User " + username + " could not be added to the group"
+    data={'name': username}
+    data = json.dumps(data)
+
+    groups = getCLIgroups(configMap, plugin_tag, allPermissions)
+    #add user to the group
+    for group in groups:
+        add=requests.post(url+'/rest/api/2/group/user?groupname='+group, auth=(user, password),headers=headers, data=data )
+
+    if add.status_code > 201:
+        if add.status_code == 400:
+            log = plugin_tag + ": user " + username+ " requested an empty group name or the user already belongs to the group"
+        elif add.status_code == 401:
+            log = plugin_tag + ": error: You are not authenticated to complete this action"
+        elif add.status_code == 403:
+            log = plugin_tag + ": error: you do not have administrator permissions to add the user " + username
+        elif add.status_code == 404:
+            log = plugin_tag + ": the requested group " + group + " was not found or requested user " + username+ " was not found"
         else:
+            log = plugin_tag + ": unexpected error. User " + username + " could not be added to the group"
+    else:
 
-            log = 'Jira: ' + username + ' added to ' + plugin_tag + '\n'
-            instruction = inviteMessage(configMap, plugin_tag)
-            done = True
+        log = 'Jira: ' + username + ' added to ' + plugin_tag + '\n'
+        instruction = inviteMessage(configMap, plugin_tag)
+        done = True
     print(log)
     return getJsonResponse("Jira Server",email, log, instruction, done)
 
@@ -109,7 +121,7 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
             delete=requests.delete(url+'/rest/api/2/group/user?groupname='+group+'&username=' + username, headers=headers,auth=(user, password))
             if delete.status_code > 200:
                 if delete.status_code == 400:
-                    log = plugin_tag + ": user " + username + " requested an empty group name"
+                    log = plugin_tag + ": user " + username + " is not in the group. The user might still exist in jira. You can remove the user manually"
                 elif delete.status_code == 401:
                     log = plugin_tag + ": error: You are not authenticated to complete this action"
 
@@ -123,7 +135,7 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
                 cont = True
         if cont:
 
-            log = plugin_tag + ': ' + username + ' removed from jira.'
+            log = plugin_tag + ': ' + username + ' is removed from group. If you want to remove the user from jira, you need to do it manually'
             instruction = username + removalMessage(configMap, plugin_tag).replace("<username>",username) + '\n'
             done = True
     print(log)
