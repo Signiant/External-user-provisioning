@@ -133,7 +133,6 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
                     log = plugin_tag + ": unexpected error. User " + username + " could not be added to the group"
             else:
                 cont = True
-                break
         if cont:
 
             log = plugin_tag + ': ' + username + ' is removed from group. If you want to remove the user from jira, you need to do it manually'
