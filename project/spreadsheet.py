@@ -8,6 +8,8 @@ import datetime
 from apiclient import discovery
 import getpass
 import googleapiclient.errors
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
 
 newLine = 9
 resultGlobal = None
@@ -60,6 +62,12 @@ def writeHeaderColumnNamesToSheet(SPREADSHEET_ID, service, email, configMap):
 
     except googleapiclient.errors.HttpError:
         print("Error. Could not create a spreadsheet for a user " + email + ". The value list might be out of index range ")
+        print("\nFirst set of values is: ")
+        print(values1)
+        print("for range: " + range1)
+        print("Second set: " )
+        print(values2)
+        print("for range: " + range2)
         cont =  False
 
     if cont:
@@ -88,6 +96,9 @@ def writeIDandNameToList(configMap, fileName, fileID, service):
 
     except googleapiclient.errors.HttpError:
         print("Error. User information was not updated in the list spreadsheet. The value list might be out of index range ")
+        print("\nThe values are: ")
+        print(values1)
+        print("The range is: " + rangeRow)
 
 def writeRowsToSheetToAddUser(SPREADSHEET_ID, email, plugin_tag, log, success):
 
@@ -123,6 +134,9 @@ def writeRowsToSheetToAddUser(SPREADSHEET_ID, email, plugin_tag, log, success):
 
     except googleapiclient.errors.HttpError:
         print("Error. User " + email + " information was not added to the spreadsheet. The value list might be out of index range ")
+        print("\nThe values are: ")
+        print(values1)
+        print("The range is: " + rangeRow)
         return False
 
     newLine+=1
@@ -195,6 +209,10 @@ def writeRowsToSheetToRemoveUser(SPREADSHEET_ID, log, success, plugin_tag):
 
     except googleapiclient.errors.HttpError:
         print("User information could not be updated in the spreadsheet, because \nthe spreadsheet does not exist or the value list might be out of index range ")
+        print("\nThe values are: ")
+        print(values1)
+        print("The range is: " + rangeRow)
+
         return False
 
     newLine += 1
@@ -230,6 +248,7 @@ def initialize(email, configMap, arg):
             data = {'properties': {'title': fileName}}
 
             try:
+                #create spreadsheet
                 sheetCreated = SHEETS.spreadsheets().create(body=data).execute()
 
             except googleapiclient.errors.HttpError:
@@ -255,7 +274,8 @@ def getService(creds):
 
 def getCredentials():
 
-    SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
+    # Full, permissive scope to access all of a user's files
+    SCOPES = 'https://www.googleapis.com/auth/drive'
     store = file.Storage('credentials.json')
     creds = store.get()
     if not creds or creds.invalid:
@@ -309,3 +329,4 @@ def search_nested(mylist, val):
 
 # automatically resize columns
 # https://developers.google.com/sheets/api/samples/rowcolumn
+
