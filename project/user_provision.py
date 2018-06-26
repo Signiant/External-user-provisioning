@@ -11,10 +11,12 @@ import azure
 import msrestazure
 import azure.graphrbac
 
+
 # internal modules
 from project import mail
 from project import plugin
 from project import spreadsheet
+
 
 imp.reload(plugin)
 
@@ -125,6 +127,7 @@ def runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, ava
                         if contWithSpreadsheet:
                             if spreadsheet.writeRowsToSheetToAddUser(spreadSheet, email, plugin_tag, logInfoForSpreadsheet, json['Success']):
                                 print("Plugin " + plugin_tag + " was updated in the google spreadsheet")
+
 
                     if arg == 'remove':
                         print("\nRunning remove: %s  " % plugin_tag)

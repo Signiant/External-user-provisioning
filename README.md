@@ -102,6 +102,14 @@ A sample config file template is provided in /project/samples
 1. Enter a username and password of your Jira administrator account
 2. Provide groups to add the new user to
 
+### Google Spreadsheet
+
+If you need to add more columns into the spreadsheet:
+1. Open spreadsheet.py
+2. In the method writeHeaderColumnNamesToSheet(SPREADSHEET_ID, service, email, configMap) add columns' headers to "values2" section
+3. In the method writeRowsToSheetToAddUser(SPREADSHEET_ID, email, plugin_tag, log, success) add values for new columns in 'values1'
+4. In the method writeRowsToSheetToRemoveUser(SPREADSHEET_ID, log, success, plugin_tag) add values for new columns in 'values1'.
+    Make sure that the new values of array rowForThisPlugin[] are properly indexed after new values are added
 
 ### Additional Information
  - Groups are required in either the config file or the command line
