@@ -61,7 +61,7 @@ plugins:
   - tag: "prod"
     plugin: "artifactory"
     message_invite: "Login using your Active Directory credentials, following the instructions here: https://"
-    message_remove: " is remove along with AD account"
+    message_remove: " is removed along with AD account"
 
   - tag: "dev1"
     plugin: "aws"

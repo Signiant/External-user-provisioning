@@ -10,11 +10,13 @@ import imp
 import azure
 import msrestazure
 import azure.graphrbac
+
+
 # internal modules
 from project import mail
 from project import plugin
+from project import spreadsheet
 
-#import spreadsheet
 
 imp.reload(plugin)
 
@@ -75,12 +77,12 @@ def main():
     emails = [x.strip() for x in args.email.split(',')]
 
     pluginInstruction = []
+
     if args.plugin is not None:
         for email in emails:
             if runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, availablePlugins, args.name, arg='add'):
                 print('\nsending email')
                 mail.emailOutput(email, configMap, pluginInstruction, arg='add')
-
             else:
                 print("\nEmail was not sent to the end user. All plugins failed.")
 
@@ -99,6 +101,16 @@ def runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, ava
     # But we want to suppress sending the email if all plugins failed
 
     registered = False
+    contWithSpreadsheet = True
+
+    spreadSheet = spreadsheet.initialize(email, configMap, arg)
+
+    if spreadSheet == None:
+        contWithSpreadsheet = False
+        if arg == 'remove':
+            print("\nYou cannot remove user information from the spreadsheet for a user: " + email + ", because the spreadsheet for this user does not exist")
+        else:
+            print("\nYou cannot update user information in the spreadsheet for a user: " + email + " because the spreadsheet for this user does not exist")
 
     for config_plugin in configMap['plugins']:
         plugin_tag = config_plugin['plugin'] + ':' + config_plugin['tag']
@@ -111,11 +123,19 @@ def runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, ava
                     if arg == 'add':
                         print("\nRunning invite: %s  " % plugin_tag)
                         json = (plugin_handle.inviteUser(email, configMap, allPermissions, plugin_tag, name))
-                       # spreadsheet.initialize(plugin_tag, configMap, email)
+                        logInfoForSpreadsheet = json['Log'].split('|', 1)[1].rstrip()
+                        if contWithSpreadsheet:
+                            if spreadsheet.writeRowsToSheetToAddUser(spreadSheet, email, plugin_tag, logInfoForSpreadsheet, json['Success']):
+                                print("Plugin " + plugin_tag + " was updated in the google spreadsheet")
+
 
                     if arg == 'remove':
                         print("\nRunning remove: %s  " % plugin_tag)
                         json = (plugin_handle.removeUser(email, configMap, allPermissions, plugin_tag))
+                        logInfoForSpreadsheet = json['Log'].split('|', 1)[1].rstrip()
+                        if contWithSpreadsheet:
+                            if spreadsheet.writeRowsToSheetToRemoveUser(spreadSheet, logInfoForSpreadsheet, json['Success'], plugin_tag):
+                                print("Plugin " + plugin_tag + " was updated in the google spreadsheet")
 
                     if json['Success']:
                         pluginInstruction.append(json)

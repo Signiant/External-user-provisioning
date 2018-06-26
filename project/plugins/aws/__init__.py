@@ -40,13 +40,16 @@ def inviteUser(email, configMap,allPermissions, plugin_tag, name):
 
     except client.exceptions.EntityAlreadyExistsException as ex:
         log = plugin_tag + "%s" % ex
-        instruction = log
+        print(log)
+        cont = False
+
+    except botocore.exceptions.EndpointConnectionError:
+        log = plugin_tag+"Error: No internet connection. Could not connect to aws"
         print(log)
         cont = False
 
     except ClientError as ce:
         log = (plugin_tag + " Unexpected Error: {0}".format(ce))
-        instruction = log
         print(log)
         cont = False
 
@@ -58,14 +61,15 @@ def inviteUser(email, configMap,allPermissions, plugin_tag, name):
              done = True
 
         except client.exceptions.NoSuchEntityException:
-            print (plugin_tag + ' error: ' + username + ' could not be added to the group, because it does not exist')
+            log =  (plugin_tag + ' error: ' + username + ' could not be added to the group, because it does not exist')
+            print(log)
 
         except client.exceptions.ServiceFailureException:
-            print(plugin_tag + ' error: ' + username + ' could not be added to the group. Service failure')
+            log = (plugin_tag + ' error: ' + username + ' could not be added to the group. Service failure')
+            print(log)
 
         except ClientError:
             log = (plugin_tag + 'Could not add user ' + username + ' to the group')
-            instruction = log
             print(log)
 
     return getJsonResponse('AWS '+plugin_tag[4:],email, log, instruction, done)
@@ -77,6 +81,8 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
     cont = True
     groups = {}
     keys = {}
+    log= ""
+    instruction = ""
 
     #Deletes the specified IAM user. The user must not belong to any groups or have any access keys, signing certificates, or attached policies.
     for key in configMap['plugins']:
@@ -91,25 +97,23 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
         aws_secret_access_key=Secret
     )
 
-    log = plugin_tag + ': ' + username + ' removed from organization.\n'
-    instruction = email.split('@', 1)[0] + removalMessage(configMap, plugin_tag)
-
     try:
         # remove from groups
         response = client.list_groups_for_user(UserName=username)
         groups = response.get('Groups')
 
     except client.exceptions.NoSuchEntityException:
-        print(plugin_tag + ' error: ' + username + ' could not be deleted, because it does not exist')
+        log = (plugin_tag + ' error: ' + username + ' could not be deleted, because it does not exist')
+        print(log)
         cont = False
 
     except client.exceptions.ServiceFailureException:
-        print(plugin_tag + ' error: ' + username + ' Service failure while deleting this user')
+        log = (plugin_tag + ' error: ' + username + ' Service failure while deleting this user')
+        print(log)
         cont = False
 
     except ClientError:
         log = (plugin_tag + 'error:  ' + username + ' was not deleted')
-        instruction = log
         cont = False
 
     if cont:
@@ -118,11 +122,13 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
                 response = client.remove_user_from_group(GroupName=group.get('GroupName'), UserName=username)
 
         except client.exceptions.NoSuchEntityException:
-            print(plugin_tag + ' error: ' + username + ' could not be removed from the group, because the user does not exist')
+            log = (plugin_tag + ' error: ' + username + ' could not be removed from the group, because the user does not exist')
+            print(log)
             cont = False
 
         except client.exceptions.ServiceFailureException:
-            print(plugin_tag + ' error: ' + username + ' could not be removed from the group. Service failure')
+            log = (plugin_tag + ' error: ' + username + ' could not be removed from the group. Service failure')
+            print(log)
             cont = False
 
     if cont:
@@ -133,16 +139,17 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
             keys = response.get('AccessKeyMetadata')
 
         except client.exceptions.NoSuchEntityException:
-            print(plugin_tag + ' error: Could not list access keys, ' + username + ' does not exist')
+            log = (plugin_tag + ' error: Could not list access keys, ' + username + ' does not exist')
+            print(log)
             cont = False
 
         except client.exceptions.ServiceFailureException:
-            print(plugin_tag + ' error: ' + username + ' Service failure while listing access key')
+            log = (plugin_tag + ' error: ' + username + ' Service failure while listing access key')
+            print(log)
             cont = False
 
         except ClientError:
             log = (plugin_tag + username + ' error: could not list access keys')
-            instruction = log
             print(log)
             cont = False
 
@@ -152,16 +159,17 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
             response = client.delete_access_key(UserName=username, AccessKeyId=key.get('AccessKeyId'))
 
         except client.exceptions.NoSuchEntityException:
-            print(plugin_tag + ' error: Could not delete access key, ' + username + ' does not exist. ')
+            log = (plugin_tag + ' error: Could not delete access key, ' + username + ' does not exist. ')
+            print(log)
             cont = False
 
         except client.exceptions.ServiceFailureException:
-            print(plugin_tag + ' error: ' + username + ' Service failure while deleting access key')
+            log = (plugin_tag + ' error: ' + username + ' Service failure while deleting access key')
+            print(log)
             cont = False
 
         except ClientError:
             log = (plugin_tag + 'Could not delete access key of a user: ' + username)
-            instruction = log
             cont = False
 
     if cont:
@@ -176,20 +184,23 @@ def removeUser(email, configMap,allPermissions, plugin_tag):
 
         try:
             response = client.delete_user(UserName=username)
-            log = plugin_tag + ': User ' + username + 'profile has been deleted\n'
-            instruction = log
+            log = plugin_tag + ': User ' + username + ' profile has been deleted\n'
             done = True
 
         except client.exceptions.NoSuchEntityException:
-            print(plugin_tag + 'error: ' + username +  ' could not be deleted, because it does not exist')
+            log = (plugin_tag + 'error: ' + username +  ' could not be deleted, because it does not exist')
+            print(log)
 
         except client.exceptions.DeleteConflict:
-            print(plugin_tag + 'error: ' +  username + ' could not delete a resource that has attached subordinate entities')
+            log = (plugin_tag + 'error: ' +  username + ' could not delete a resource that has attached subordinate entities')
+            print(log)
 
         except client.exceptions.ServiceFailureException:
-            print(plugin_tag + 'error: ' + username + ' could not be deleted. Service failure')
+            log = (plugin_tag + 'error: ' + username + ' could not be deleted. Service failure')
+            print(log)
 
         except ClientError:
-            print(plugin_tag + 'error: ' +  username + ' could not be deleted')
+            log = (plugin_tag + 'error: ' +  username + ' could not be deleted')
+            print(log)
 
     return getJsonResponse('AWS '+plugin_tag[4:],email, log, instruction, done)
