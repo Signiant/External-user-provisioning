@@ -1,6 +1,5 @@
 from __future__ import print_function
 from apiclient.discovery import build
-import httplib2
 from httplib2 import Http
 from oauth2client import file, client, tools
 from oauth2client import clientsecrets
@@ -8,8 +7,8 @@ import datetime
 from apiclient import discovery
 import getpass
 import googleapiclient.errors
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
+from project import GoogleDriveV3
+
 
 newLine = 9
 resultGlobal = None
@@ -257,6 +256,20 @@ def initialize(email, configMap, arg):
 
             SPREADSHEET_ID = sheetCreated['spreadsheetId']
 
+            if 'spreadsheet_database' in configMap:
+                folderID = configMap['spreadsheet_database']['folderID']
+            else:
+                print("Spreadsheet_database section is missing in your config file")
+                return None
+
+            googleDriveServiceV3 = GoogleDriveV3.buildService()
+
+            if googleDriveServiceV3:
+                newFolder = GoogleDriveV3.moveFileToFolder(SPREADSHEET_ID, folderID, googleDriveServiceV3)
+
+                if newFolder == None:
+                    print("File was not moved to the expected folder. It was created in the authorized google drive account")
+
             # writes header data to a spreadsheet:
             writeHeaderColumnNamesToSheet(SPREADSHEET_ID, service, email, configMap)
 
@@ -329,4 +342,3 @@ def search_nested(mylist, val):
 
 # automatically resize columns
 # https://developers.google.com/sheets/api/samples/rowcolumn
-
