@@ -10,8 +10,6 @@ import googleapiclient.errors
 
 def buildService():
 
-    global file
-
     # Setup the Drive v3 API
     SCOPES = 'https://www.googleapis.com/auth/drive'
     store = file.Storage('credentials.json')
@@ -32,8 +30,6 @@ def buildService():
     return service
 
 def moveFileToFolder(fileID, folderID, service):
-
-    global file
 
     file_id = fileID
     folder_id = folderID
