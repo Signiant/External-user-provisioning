@@ -262,10 +262,13 @@ def initialize(email, configMap, arg):
                 print("Spreadsheet_database section is missing in your config file")
                 return None
 
-            newFolder = GoogleDriveV3.moveFileToFolder(SPREADSHEET_ID, folderID)
+            googleDriveServiceV3 = GoogleDriveV3.buildService()
 
-            if newFolder == None:
-                print("File was not moved to the expected folder. It was created in the authorized google drive account")
+            if googleDriveServiceV3:
+                newFolder = GoogleDriveV3.moveFileToFolder(SPREADSHEET_ID, folderID, googleDriveServiceV3)
+
+                if newFolder == None:
+                    print("File was not moved to the expected folder. It was created in the authorized google drive account")
 
             # writes header data to a spreadsheet:
             writeHeaderColumnNamesToSheet(SPREADSHEET_ID, service, email, configMap)

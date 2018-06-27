@@ -8,7 +8,9 @@ import googleapiclient.errors
 #this module uses Google Drive v3 API because there is no option to
 # work with folders in Google Spreadsheet v4 API
 
-def buildService(file):
+def buildService():
+
+    global file
 
     # Setup the Drive v3 API
     SCOPES = 'https://www.googleapis.com/auth/drive'
@@ -29,11 +31,10 @@ def buildService(file):
 
     return service
 
-def moveFileToFolder(fileID, folderID):
+def moveFileToFolder(fileID, folderID, service):
 
     global file
 
-    service = buildService(file)
     file_id = fileID
     folder_id = folderID
     # Retrieve the existing parents to remove
@@ -52,7 +53,7 @@ def moveFileToFolder(fileID, folderID):
                                             removeParents=previous_parents,
                                             fields='id, parents').execute()
     except googleapiclient.errors.HttpError:
-        print("Could notmove a file to the excpected folder. Check the folder ID in your config.yaml file")
+        print("Could not move a file to the excpected folder. Check the folder ID in your config.yaml file")
         return None
 
     return file
