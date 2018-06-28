@@ -375,7 +375,6 @@ def writeNameAndIDtoDatabaseSpreadsheet(service, SPREADSHEET_ID):
         'values': values1,
     }
     try:
-
         service.spreadsheets().values().append(
             spreadsheetId=SPREADSHEET_ID, range=rangeRow,
             valueInputOption="RAW", body=body).execute()
@@ -391,6 +390,3 @@ def writeNameAndIDtoDatabaseSpreadsheet(service, SPREADSHEET_ID):
 
 # automatically resize columns
 # https://developers.google.com/sheets/api/samples/rowcolumn
-
-
-#client_secret in the project

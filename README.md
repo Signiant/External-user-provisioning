@@ -71,6 +71,12 @@ A sample config file template is provided in /project/samples
 1. Enter the new users full name and organization
 2. Enter email server authentication information
 
+#### spreadsheet_database ([Google Spreadsheet](Google_Spreadsheet/README.md)):
+1. Enter the id of the spreadsheet that will contain all the names and ids of spreadsheets that going to be created
+2. Enter the name of this spreadsheet
+3. Enter the folder id where you want to store all your spreadsheets
+4. Enter the url of this folder
+
 #### Papertrail
 1. In Settings → Profile, make sure your Papertrail account has 'Manage users and permissions' capabilities.
 2. Within the profile screen copy your Prod and Dev API Tokens to the two empty ApiToken fields.
@@ -102,7 +108,11 @@ A sample config file template is provided in /project/samples
 1. Enter a username and password of your Jira administrator account
 2. Provide groups to add the new user to
 
-### Google Spreadsheet
+### Google_Spreadsheet
+
+Create a google spreadshhet that is going to be a list of the names and ids of the spreadsheets created by the tool.
+The tool will create a Google spreadsheet for every user with the information on plugins being activated or updated.
+Every spreadsheet created by the tool is going to reference this list spreadsheet.
 
 To get OAuth2 credentials:
 
@@ -120,9 +130,6 @@ To get OAuth2 credentials:
 12. Click on the download arrow on the right from the client IDs created
 13. Move this file to your working directory and rename it 'client_secret.json'
 
-Run the following command to install the library using pip:
-
-pip install --upgrade google-api-python-client
 
 If you need to add more columns into the spreadsheet:
 1. Open spreadsheet.py
