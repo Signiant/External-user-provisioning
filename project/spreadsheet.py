@@ -301,7 +301,7 @@ def getCredentials():
 
     # Full, permissive scope to access all of a user's files
     SCOPES = 'https://www.googleapis.com/auth/drive'
-    store = file.Storage('credentials.json')
+    store = file.Storage('project/credentials.json')
     creds = store.get()
     if not creds or creds.invalid:
         try:
