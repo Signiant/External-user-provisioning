@@ -71,7 +71,7 @@ A sample config file template is provided in /project/samples
 1. Enter the new users full name and organization
 2. Enter email server authentication information
 
-#### spreadsheet_database ([Google_Spreadsheet](#Google_Spreadsheet)):
+#### spreadsheet_database [Google_Spreadsheet](##Google_Spreadsheet):
 1. Enter the id of the spreadsheet that will contain all the names and ids of spreadsheets that going to be created
 2. Enter the name of this spreadsheet
 3. Enter the folder id where you want to store all your spreadsheets
@@ -108,14 +108,13 @@ A sample config file template is provided in /project/samples
 1. Enter a username and password of your Jira administrator account
 2. Provide groups to add the new user to
 
-# Google_Spreadsheet
+## Google_Spreadsheet
 
 Create a google spreadshhet that is going to be a list of the names and ids of the spreadsheets created by the tool.
 The tool will create a Google spreadsheet for every user with the information on plugins being activated or updated.
 Every spreadsheet created by the tool is going to reference this list spreadsheet.
 
-To get OAuth2 credentials:
-
+#### To get OAuth2 credentials:
 1. Log in into your account at https://console.developers.google.com
 2. From the project drop-down, choose Create a new project, enter a name for the project, and optionally, edit the provided project ID. Click Create.
 3. Choose enable apis and services at the top of the screen
@@ -130,8 +129,7 @@ To get OAuth2 credentials:
 12. Click on the download arrow on the right from the client IDs created
 13. Move this file to your working directory and rename it 'client_secret.json'
 
-
-If you need to add more columns into the spreadsheet:
+#### If you need to add more columns into the spreadsheet:
 1. Open spreadsheet.py
 2. In the method writeHeaderColumnNamesToSheet(SPREADSHEET_ID, service, email, configMap) add columns' headers to "values2" section
 3. In the method writeRowsToSheetToAddUser(SPREADSHEET_ID, email, plugin_tag, log, success) add values for new columns in 'values1'
