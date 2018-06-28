@@ -71,7 +71,7 @@ A sample config file template is provided in /project/samples
 1. Enter the new users full name and organization
 2. Enter email server authentication information
 
-#### spreadsheet_database ([Google Spreadsheet](Google_Spreadsheet)):
+#### spreadsheet_database ([Google_Spreadsheet]):
 1. Enter the id of the spreadsheet that will contain all the names and ids of spreadsheets that going to be created
 2. Enter the name of this spreadsheet
 3. Enter the folder id where you want to store all your spreadsheets
@@ -108,7 +108,7 @@ A sample config file template is provided in /project/samples
 1. Enter a username and password of your Jira administrator account
 2. Provide groups to add the new user to
 
-### Google_Spreadsheet
+#### Google_Spreadsheet
 
 Create a google spreadshhet that is going to be a list of the names and ids of the spreadsheets created by the tool.
 The tool will create a Google spreadsheet for every user with the information on plugins being activated or updated.
