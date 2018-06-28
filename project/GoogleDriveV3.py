@@ -25,7 +25,11 @@ def buildService():
         except client.Error:
             print('Unexpected Error')
 
-    service = build('drive', 'v3', http=creds.authorize(Http()))
+    try:
+        service = build('drive', 'v3', http=creds.authorize(Http()))
+    except AttributeError:
+        print("client_secret.json is missing from your project")
+        return None
 
     return service
 

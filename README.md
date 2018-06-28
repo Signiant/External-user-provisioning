@@ -104,6 +104,26 @@ A sample config file template is provided in /project/samples
 
 ### Google Spreadsheet
 
+To get OAuth2 credentials:
+
+1. Log in into your account at https://console.developers.google.com
+2. From the project drop-down, choose Create a new project, enter a name for the project, and optionally, edit the provided project ID. Click Create.
+3. Choose enable apis and services at the top of the screen
+4. Search for Googlde Drive API. Activate it.
+5. Search for Google Sheets API. Activate it.
+6. Go to 'Credentials' on the left side of the screen
+7. Ignore the window called 'Create credentials'. Go to 'OAuth consent screeen' above it
+8. Enter product name and press 'Save'
+9. In the 'Credentials' window open the drop down menu under 'Create credentials' and choose 'OAuth client ID'
+10. Choose 'Other' in the Application type, enter the name and press 'Create'
+11. Press 'OK' to close the pop up window
+12. Click on the download arrow on the right from the client IDs created
+13. Move this file to your working directory and rename it 'client_secret.json'
+
+Run the following command to install the library using pip:
+
+pip install --upgrade google-api-python-client
+
 If you need to add more columns into the spreadsheet:
 1. Open spreadsheet.py
 2. In the method writeHeaderColumnNamesToSheet(SPREADSHEET_ID, service, email, configMap) add columns' headers to "values2" section

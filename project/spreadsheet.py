@@ -224,68 +224,80 @@ def initialize(email, configMap, arg):
 
     credentials = getCredentials()
     service = getService(credentials)
-    fileName = email.split('@', 1)[0]
-
-    if 'spreadsheet_database' in configMap:
-        spreadSheetDatabase_ID = configMap['spreadsheet_database']['id']
-    else:
-        print("Spreadsheet_database section is missing in your config file")
+    if service is None:
         return None
-
-    #looks for a value in the spreadsheet list
-    foundRow = findSpecificEntryInAllRows(service, spreadSheetDatabase_ID, fileName)
-
-    #if the name is found, return ID of that spreadsheet
-    if foundRow:
-        return foundRow[1]
-    #if not, it creates a new spreadsheet
     else:
-        #if you need to add a user, new spreadsheet will be created
-        if arg == 'add':
+        fileName = email.split('@', 1)[0]
 
-            SHEETS = discovery.build('sheets', 'v4', http=credentials.authorize(Http()))
-            data = {'properties': {'title': fileName}}
-
-            try:
-                #create spreadsheet
-                sheetCreated = SHEETS.spreadsheets().create(body=data).execute()
-
-            except googleapiclient.errors.HttpError:
-                print("Could not create new spreadsheet for a user " + email)
-                return None
-
-            SPREADSHEET_ID = sheetCreated['spreadsheetId']
-
-            if 'spreadsheet_database' in configMap:
-                folderID = configMap['spreadsheet_database']['folderID']
-            else:
-                print("Spreadsheet_database section is missing in your config file")
-                return None
-
-            googleDriveServiceV3 = GoogleDriveV3.buildService()
-
-            if googleDriveServiceV3:
-                newFolder = GoogleDriveV3.moveFileToFolder(SPREADSHEET_ID, folderID, googleDriveServiceV3)
-
-                if newFolder == None:
-                    print("File was not moved to the expected folder. It was created in the authorized google drive account")
-
-            # writes header data to a spreadsheet:
-            writeHeaderColumnNamesToSheet(SPREADSHEET_ID, service, email, configMap)
-
-            #returns the ID of the new spreadsheet
-            return SPREADSHEET_ID
-        # if you need to remove a user, but the spreadsheet does not exists, returns None
+        if 'spreadsheet_database' in configMap:
+            spreadSheetDatabase_ID = configMap['spreadsheet_database']['id']
         else:
+            print("Spreadsheet_database section is missing in your config file")
             return None
+
+        #looks for a value in the spreadsheet list
+        foundRow = findSpecificEntryInAllRows(service, spreadSheetDatabase_ID, fileName)
+
+        #if the name is found, return ID of that spreadsheet
+        if foundRow:
+            return foundRow[1]
+        #if not, it creates a new spreadsheet
+        else:
+            #if you need to add a user, new spreadsheet will be created
+            if arg == 'add':
+
+                SHEETS = discovery.build('sheets', 'v4', http=credentials.authorize(Http()))
+                data = {'properties': {'title': fileName}}
+
+                try:
+                    #create spreadsheet
+                    sheetCreated = SHEETS.spreadsheets().create(body=data).execute()
+
+                except googleapiclient.errors.HttpError:
+                    print("Could not create new spreadsheet for a user " + email)
+                    return None
+
+                SPREADSHEET_ID = sheetCreated['spreadsheetId']
+
+                if 'spreadsheet_database' in configMap:
+                    folderID = configMap['spreadsheet_database']['folderID']
+                else:
+                    print("Spreadsheet_database section is missing in your config file")
+                    return None
+
+                googleDriveServiceV3 = GoogleDriveV3.buildService()
+
+                if googleDriveServiceV3:
+                    newFolder = GoogleDriveV3.moveFileToFolder(SPREADSHEET_ID, folderID, googleDriveServiceV3)
+
+                    if newFolder == None:
+                        print("File was not moved to the expected folder. It was created in the authorized google drive account")
+                else:
+                    print("Could not authorize the user")
+
+                # writes header data to a spreadsheet:
+                writeHeaderColumnNamesToSheet(SPREADSHEET_ID, service, email, configMap)
+
+                #returns the ID of the new spreadsheet
+                return SPREADSHEET_ID
+            # if you need to remove a user, but the spreadsheet does not exists, returns None
+            else:
+                return None
 
 
 def getService(creds):
 
-    service = build('sheets', 'v4', http=creds.authorize(Http()))
+    service = None
+    try:
+        service = build('sheets', 'v4', http=creds.authorize(Http()))
+
+    except AttributeError:
+        print("client_secret.json is missing from your project")
+
     return service
 
 def getCredentials():
+   # CLIENT_SECRETS_FILE = "\client_secrets.json"
 
     # Full, permissive scope to access all of a user's files
     SCOPES = 'https://www.googleapis.com/auth/drive'
@@ -293,7 +305,7 @@ def getCredentials():
     creds = store.get()
     if not creds or creds.invalid:
         try:
-            flow = client.flow_from_clientsecrets('client_secret.json', SCOPES)
+            flow = client.flow_from_clientsecrets("project/client_secret.json", SCOPES)
             flags = tools.argparser.parse_args(args=[])
             creds = tools.run_flow(flow, store, flags)
 
@@ -323,6 +335,9 @@ def findSpecificEntryInAllRows(service, SPREADSHEET_ID, searchValue):
     # gets all the rows of the database (the section where the user was added)
     numRows = result.get('values') if result.get('values') is not None else 0
 
+    if numRows == 0:
+        writeNameAndIDtoDatabaseSpreadsheet(service, SPREADSHEET_ID)
+
     # search nested lists of the database for the values equal to the plugin_tag being removed
     foundRow = search_nested(numRows, searchValue)
 
@@ -334,11 +349,48 @@ def findSpecificEntryInAllRows(service, SPREADSHEET_ID, searchValue):
 
 # This function will search each cell of mylist for val and if found will return entire row
 def search_nested(mylist, val):
-    for i in range(len(mylist)):
-        for j in range(len(mylist[i])):
-            if mylist[i][j] == val:
-                return mylist[i]
+
+    if not mylist:
+        print("The spreadsheet is empty")
+        return None
+    else:
+
+        for i in range(len(mylist)):
+            for j in range(len(mylist[i])):
+                if mylist[i][j] == val:
+                    return mylist[i]
+
+
+def writeNameAndIDtoDatabaseSpreadsheet(service, SPREADSHEET_ID):
+
+    rangeRow = 'A1:D1000'
+
+    values1 = [
+        [
+            "Name", "ID",
+        ],
+    ]
+
+    body = {
+        'values': values1,
+    }
+    try:
+
+        service.spreadsheets().values().append(
+            spreadsheetId=SPREADSHEET_ID, range=rangeRow,
+            valueInputOption="RAW", body=body).execute()
+
+    except googleapiclient.errors.HttpError:
+        print(
+            "Error. Name and ID values were not updated in the database list spreadsheet. The value list might be out of index range ")
+        print("\nThe values are: ")
+        print(values1)
+        print("The range is: " + rangeRow)
+
 
 
 # automatically resize columns
 # https://developers.google.com/sheets/api/samples/rowcolumn
+
+
+#client_secret in the project
