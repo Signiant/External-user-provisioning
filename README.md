@@ -71,7 +71,7 @@ A sample config file template is provided in /project/samples
 1. Enter the new users full name and organization
 2. Enter email server authentication information
 
-#### spreadsheet_database fields [click here to learn more](##google-spreadsheet)
+#### spreadsheet_database fields [click here to learn more](#google-spreadsheet)
 1. Enter the id of the spreadsheet that will contain all the names and ids of spreadsheets that going to be created
 2. Enter the name of this spreadsheet
 3. Enter the folder id where you want to store all your spreadsheets
