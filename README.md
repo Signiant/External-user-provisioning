@@ -48,20 +48,9 @@ python3 user_provision.py
 
 ## Installing the Tool
 
-Option 1 (clone)
 1. Install python 3 or higher
 2. Clone the repository at https://github.com/Signiant/External-user-provisioning
 3. Run the tool from the project folder as a python app (see example above)
-
-Option 2 (pip)
- 1. Install python 3 or higher
- 2. In the terminal run:
- >     sudo pip3 install ExternalUserProvisioning
- 3. Run the tool anywhere using the new console script "userprovision" with required arguments.
-
-```bash
-userprovision -n "Full Name"  -c "/config-files/user-prov/config-file/config.yaml" -e test@gmail.com -p papertrail:prod
-```
 
 ## Setting up the Config File
 
@@ -72,7 +61,7 @@ A sample config file template is provided in /project/samples
 2. Enter email server authentication information
 
 #### spreadsheet_database fields [click here to learn more](#google-spreadsheet)
-1. Enter the id of the spreadsheet that will contain all the names and ids of spreadsheets that going to be created
+1. Enter the id of the index spreadsheet. This that will be updated by the tool and will contain a mapping of username to spreadsheet ID
 2. Enter the name of this spreadsheet
 3. Enter the folder id where you want to store all your spreadsheets
 4. Enter the url of this folder
@@ -108,33 +97,29 @@ A sample config file template is provided in /project/samples
 1. Enter a username and password of your Jira administrator account
 2. Provide groups to add the new user to
 
-## Google Spreadsheet
+## Google Spreadsheets
+The tool will create a Google spreadsheet for every user with information on the status of each pluing when the user is added or removed.  To keep track of all of the individual user spreadsheets, an index spreadsheet is used.  This contains the mapping of username to spreadsheet ID so that the tool can update the sheet when a user is removed.
 
-Create a google spreadshhet that is going to be a list of the names and ids of the spreadsheets created by the tool.
-The tool will create a Google spreadsheet for every user with the information on plugins being activated or updated.
-Every spreadsheet created by the tool is going to reference this list spreadsheet.
+> You must create the index spreadsheet in Google drive first and configure the ID of this spreadsheet in the config file before running the tool
 
-#### To get OAuth2 credentials:
-1. Log in into your account at https://console.developers.google.com
+
+#### OAuth2 Credentials required to access Google Drive and Sheets
+In order for the tool to get authorization to Google drive, you must follow these steps to obtain oAuth credentials and place a file in the correct location before running the tool.
+
+1. Log in into your google account at https://console.developers.google.com
 2. From the project drop-down, choose Create a new project, enter a name for the project, and optionally, edit the provided project ID. Click Create.
 3. Choose enable apis and services at the top of the screen
 4. Search for Googlde Drive API. Activate it.
 5. Search for Google Sheets API. Activate it.
-6. Go to 'Credentials' on the left side of the screen
-7. Ignore the window called 'Create credentials'. Go to 'OAuth consent screeen' above it
-8. Enter product name and press 'Save'
-9. In the 'Credentials' window open the drop down menu under 'Create credentials' and choose 'OAuth client ID'
-10. Choose 'Other' in the Application type, enter the name and press 'Create'
-11. Press 'OK' to close the pop up window
-12. Click on the download arrow on the right from the client IDs created
-13. Move this file to your working directory and rename it 'client_secret.json'
+6. Go to _Credentials_ on the left side of the screen
+7. Ignore the window called _Create credentials_; Instead, Go to the _OAuth consent screeen_ above it
+8. Enter product name and press _Save_
+9. In the _Credentials_ window, open the drop down menu under _Create credentials_ and choose _OAuth client ID_
+10. Choose _Other_ in the Application type, enter the name and press _Create_
+11. Press _OK_ to close the pop up window
+12. Click on the download arrow on the right from the client IDs created. This will download a json file 
+13. Move this json file to the _project_ subdirectory of the repo you have cloned and rename it to _client_secret.json_
 
-#### If you need to add more columns into the spreadsheet:
-1. Open spreadsheet.py
-2. In the method writeHeaderColumnNamesToSheet(SPREADSHEET_ID, service, email, configMap) add columns' headers to "values2" section
-3. In the method writeRowsToSheetToAddUser(SPREADSHEET_ID, email, plugin_tag, log, success) add values for new columns in 'values1'
-4. In the method writeRowsToSheetToRemoveUser(SPREADSHEET_ID, log, success, plugin_tag) add values for new columns in 'values1'.
-    Make sure that the new values of array rowForThisPlugin[] are properly indexed after new values are added
 
 ### Additional Information
  - Groups are required in either the config file or the command line
@@ -146,3 +131,9 @@ Every spreadsheet created by the tool is going to reference this list spreadshee
    removed from all groups.
    - for help:
  > python3.6 user_provision.py --help
+- If you need to add more columns into the spreadsheet for each user
+    - Open spreadsheet.py
+    - In the method writeHeaderColumnNamesToSheet(SPREADSHEET_ID, service, email, configMap) add columns' headers to "values2" section
+    - In the method writeRowsToSheetToAddUser(SPREADSHEET_ID, email, plugin_tag, log, success) add values for new columns in 'values1'
+    - In the method writeRowsToSheetToRemoveUser(SPREADSHEET_ID, log, success, plugin_tag) add values for new columns in 'values1'.
+    Make sure that the new values of array rowForThisPlugin[] are properly indexed after new values are added
