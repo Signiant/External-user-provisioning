@@ -1,4 +1,4 @@
-# External User Provisioning Tool [External User Provisioning Tool](uptool.png)
+# External User Provisioning Tool ![External User Provisioning Tool](uptool.png)
 Add or remove users from multiple web services with desired permissions and notify new user. Useful when a service does not support single sign-on or the plan cost to get single sign-on is prohibitivly expensive
 
 Currently supports:
