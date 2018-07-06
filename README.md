@@ -20,6 +20,18 @@ The tool is built using a plugin model so adding new services that have an API s
 
 The User Provisioning Tool is a command line tool that accepts a path to the config file, the new user's email, the services to be run and custom permissions or groups for each service. The tool sends an email notifying the new user that emails from various services have been sent to them or by providing them with a link to a service that prompts them to activate their organization account.
 
+## Run from Docker
+
+The easiest way to run the tool is to run it from Docker:
+
+1. Pull the Docker image with the command:
+_docker pull signiant/external-user-provisioning_
+
+2. Run the image using your parameters (-n, -c, -e, -p/-r):
+_docker run -v [link to your config.yaml file stored locally]/config.yaml:/config.yaml kangaroo -n "Test User" -c "/config.yaml" -e test@email.com -p all_
+
+In this example, we use a bindmount to mount in the config file from a local folder to the root directory of the container.
+
 ## Example
 
 The following command creates:
