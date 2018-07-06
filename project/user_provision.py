@@ -111,7 +111,7 @@ def runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, ava
             print("\nYou cannot remove user information from the spreadsheet for a user: " + email + ", because the spreadsheet for this user does not exist")
         else:
             print("\nYou cannot update user information in the spreadsheet for a user: " + email + " because the spreadsheet for this user does not exist "
-                                                                                                   "\n or the client_secret.yaml is missing")
+                                                                                                   "\n or the client_secret.json is missing")
 
     for config_plugin in configMap['plugins']:
         plugin_tag = config_plugin['plugin'] + ':' + config_plugin['tag']
