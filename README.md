@@ -28,9 +28,10 @@ The easiest way to run the tool is to run it from Docker:
 _docker pull signiant/external-user-provisioning_
 
 2. Run the image using your parameters (-n, -c, -e, -p/-r):
-_docker run -v [link to your config.yaml file stored locally]/config.yaml:/config.yaml signiant/external-user-provisioning -n "Test User" -c "/config.yaml" -e test@email.com -p all_
 
-In this example, we use a bindmount to mount in the config file from a local folder to the root directory of the container.
+_docker run --rm -v [link to your config.yaml file stored locally]/config.yaml:/config.yaml signiant/external-user-provisioning -v [link to your client_secret.json file stored locally]/client_secret.json:/client_secret.json signiant/external-user-provisioning -n "Test User" -c "/config.yaml" -e test@email.com -p all_
+
+In this example, we use a bindmount to mount in the config.yaml file and client_secret.json file from a local folder to the root directory of the container.
 
 ## Example
 
