@@ -24,14 +24,28 @@ The User Provisioning Tool is a command line tool that accepts a path to the con
 
 The easiest way to run the tool is to run it from Docker:
 
-1. Pull the Docker image with the command:
+1. Pull the Docker image using the command:
+
 _docker pull signiant/external-user-provisioning_
 
-2. Run the image using your parameters (-n, -c, -e, -p/-r):
+2. Build the docker container in the interactive mode:
 
-_docker run --rm -v [link to your config.yaml file stored locally]/config.yaml:/config.yaml signiant/external-user-provisioning -v [link to your client_secret.json file stored locally]/client_secret.json:/client_secret.json signiant/external-user-provisioning -n "Test User" -c "/config.yaml" -e test@email.com -p all_
+_docker run -it -v [link to your config.yaml file stored locally]/config.yaml:/config.yaml signiant/external-user-provisioning -v [link to your client_secret.json file stored locally]/client_secret.json:/client_secret.json signiant/external-user-provisioning_
+
+3. Run the container using your parameters (-n, -c, -e, -p/-r) in the bash shell:
+
+_uptool -n "Test User" -c "/config.yaml" -e test@email.com -p all_
+
+4. Copy the authentication link and paste it into your browser.
+
+5. Follow the authentication steps until you see verification code. Copy it and paste into the bash shell.
 
 In this example, we use a bindmount to mount in the config.yaml file and client_secret.json file from a local folder to the root directory of the container.
+
+If you want to run the same docker container again, you can type the command:
+
+_docker start [container name]_
+
 
 ## Example
 
