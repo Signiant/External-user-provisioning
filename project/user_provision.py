@@ -1,22 +1,24 @@
 import argparse
-import getpass
 import os
 import sys
 import yaml
-import datetime
 import logging
 import imp
 
-import azure
-import msrestazure
-import azure.graphrbac
+# import azure
+# import msrestazure
+# import azure.graphrbac
+
+from oauth2client import file, client, tools
+from oauth2client import clientsecrets
+import datetime
+import getpass
 
 
 # internal modules
 from project import mail
 from project import plugin
 from project import spreadsheet
-
 
 imp.reload(plugin)
 
@@ -31,6 +33,29 @@ def readConfigFile(path):
         "Error: Unable to open config file %s or invalid yaml" % path
     return configMap
 
+def getCredentials(path):
+
+    # Full, permissive scope to access all of a user's files
+    SCOPES = 'https://www.googleapis.com/auth/drive'
+    # store = file.Storage('/tmp/credentials.json')
+    store = file.Storage('credentials.json')
+    creds = store.get()
+    if not creds or creds.invalid:
+        try:
+            flow = client.flow_from_clientsecrets(path, SCOPES)
+            flags = tools.argparser.parse_args(args=['--noauth_local_webserver'])
+            #flags = tools.argparser.parse_args(args=[])
+            creds = tools.run_flow(flow, store, flags)
+
+        except clientsecrets.InvalidClientSecretsError:
+            print('The client secrets were missing or invalid: ')
+        except client.UnknownClientSecretsFlowError:
+            print('This OAuth 2.0 flow is unsupported')
+        except client.Error:
+            print('Unexpected Error')
+
+    return creds
+
 
 def getDate():
     return datetime.datetime.now()
@@ -43,13 +68,13 @@ def getJsonResponse(plugin, email, log, instruction, success):
             "Success": success}
 
 
-
 def main():
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
     parser = argparse.ArgumentParser(description='External user provisioning tool')
     parser.add_argument('-n', '--name', help='New user\'s full name', required=True)
     parser.add_argument('-e', '--email', help='New user\'s email', required=True)
     parser.add_argument('-c', '--config', help='Full path to a config file', required=True)
+    parser.add_argument('-s', '--client_secret', help='Full path to a client_secret.json file', required=True)
     parser.add_argument('-p', '--plugin', help='The plugin(s) to add users seperated by commas.', required=False)
     parser.add_argument('-r', '--remove', help='The plugin to execute to remove users', required=False)
     parser.add_argument('-l', '--permission',
@@ -61,41 +86,48 @@ def main():
 
     configMap = readConfigFile(args.config)
 
+    clientSecret = getCredentials(args.client_secret)
+
     availablePlugins = []
-    for plugin in configMap['plugins']:
-        availablePlugins.append(plugin['plugin'] + ':' + plugin['tag'])
 
-    allPermissions = []
-    if args.permission is not None:
-        permissions = [x.strip() for x in args.permission.split(';')]
-        for permission in permissions:
-            allPermissions.append(permission)
+    if 'plugins' not in configMap:
+        print("\nFile config.yaml is missing or invalid")
+    else:
 
-    # Get entered plugins / all plugins
-    plugins = getArgPlugins(args.plugin, configMap)
-    pluginsremove = getArgPlugins(args.remove, configMap)
-    emails = [x.strip() for x in args.email.split(',')]
+        for plugin in configMap['plugins']:
+            availablePlugins.append(plugin['plugin'] + ':' + plugin['tag'])
 
-    pluginInstruction = []
+        allPermissions = []
+        if args.permission is not None:
+            permissions = [x.strip() for x in args.permission.split(';')]
+            for permission in permissions:
+                allPermissions.append(permission)
 
-    if args.plugin is not None:
-        for email in emails:
-            if runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, availablePlugins, args.name, arg='add'):
-                print('\nsending email')
-                mail.emailOutput(email, configMap, pluginInstruction, arg='add')
-            else:
-                print("\nEmail was not sent to the end user. All plugins failed.")
+        # Get entered plugins / all plugins
+        plugins = getArgPlugins(args.plugin, configMap)
+        pluginsremove = getArgPlugins(args.remove, configMap)
+        emails = [x.strip() for x in args.email.split(',')]
 
-    if args.remove is not None:
-        for email in emails:
-           if runPlugins(configMap, pluginsremove, email, allPermissions, pluginInstruction, availablePlugins, args.name, arg='remove'):
-                print('sending email')
-                mail.emailOutput(email, configMap, pluginInstruction, arg='remove')
-           else:
-                print("\nUser was not deleted from any of the accounts. All plugins failed")
+        pluginInstruction = []
+
+        if args.plugin is not None:
+            for email in emails:
+                if runPlugins(configMap, clientSecret, plugins, email, allPermissions, pluginInstruction, availablePlugins, args.name, arg='add'):
+                    print('\nsending email')
+                    mail.emailOutput(email, configMap, pluginInstruction, arg='add')
+                else:
+                    print("\nEmail was not sent to the end user. All plugins failed.")
+
+        if args.remove is not None:
+            for email in emails:
+               if runPlugins(configMap, clientSecret, pluginsremove, email, allPermissions, pluginInstruction, availablePlugins, args.name, arg='remove'):
+                    print('sending email')
+                    mail.emailOutput(email, configMap, pluginInstruction, arg='remove')
+               else:
+                    print("\nUser was not deleted from any of the accounts. All plugins failed")
 
 
-def runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, availablePlugins, name, arg):
+def runPlugins(configMap, clientSecret, plugins, email, allPermissions, pluginInstruction, availablePlugins, name, arg):
     # we use registered to flag is ANY plugins worked
     # If even one succeeded, we set registered to True and still send an email
     # But we want to suppress sending the email if all plugins failed
@@ -103,7 +135,7 @@ def runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, ava
     registered = False
     contWithSpreadsheet = True
 
-    spreadSheet = spreadsheet.initialize(email, configMap, arg)
+    spreadSheet = spreadsheet.initialize(email, clientSecret, configMap, arg)
 
     if spreadSheet == None:
         contWithSpreadsheet = False
@@ -126,7 +158,7 @@ def runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, ava
                         json = (plugin_handle.inviteUser(email, configMap, allPermissions, plugin_tag, name))
                         logInfoForSpreadsheet = json['Log'].split('|', 1)[1].rstrip()
                         if contWithSpreadsheet:
-                            if spreadsheet.writeRowsToSheetToAddUser(spreadSheet, email, plugin_tag, logInfoForSpreadsheet, json['Success']):
+                            if spreadsheet.writeRowsToSheetToAddUser(clientSecret, spreadSheet, email, plugin_tag, logInfoForSpreadsheet, json['Success']):
                                 print("Plugin " + plugin_tag + " was updated in the google spreadsheet")
 
 
@@ -135,7 +167,7 @@ def runPlugins(configMap, plugins, email, allPermissions, pluginInstruction, ava
                         json = (plugin_handle.removeUser(email, configMap, allPermissions, plugin_tag))
                         logInfoForSpreadsheet = json['Log'].split('|', 1)[1].rstrip()
                         if contWithSpreadsheet:
-                            if spreadsheet.writeRowsToSheetToRemoveUser(spreadSheet, logInfoForSpreadsheet, json['Success'], plugin_tag):
+                            if spreadsheet.writeRowsToSheetToRemoveUser(clientSecret, spreadSheet, logInfoForSpreadsheet, json['Success'], plugin_tag):
                                 print("Plugin " + plugin_tag + " was updated in the google spreadsheet")
 
                     if json['Success']:

@@ -12,7 +12,7 @@ def buildService():
 
     # Setup the Drive v3 API
     SCOPES = 'https://www.googleapis.com/auth/drive'
-    store = file.Storage('project/credentials.json')
+    store = file.Storage('credentials.json')
     creds = store.get()
     if not creds or creds.invalid:
         try:

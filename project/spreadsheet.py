@@ -9,7 +9,6 @@ import getpass
 import googleapiclient.errors
 from project import GoogleDriveV3
 
-
 newLine = 9
 resultGlobal = None
 
@@ -99,10 +98,10 @@ def writeIDandNameToList(configMap, fileName, fileID, service):
         print(values1)
         print("The range is: " + rangeRow)
 
-def writeRowsToSheetToAddUser(SPREADSHEET_ID, email, plugin_tag, log, success):
+def writeRowsToSheetToAddUser(credentials, SPREADSHEET_ID, email, plugin_tag, log, success):
 
     global newLine
-    credentials = getCredentials()
+   # credentials = getCredentials()
     service = getService(credentials)
     now = datetime.datetime.now()
     #to add each plugin at a new line of a sheet
@@ -143,10 +142,10 @@ def writeRowsToSheetToAddUser(SPREADSHEET_ID, email, plugin_tag, log, success):
     return True
 
 
-def writeRowsToSheetToRemoveUser(SPREADSHEET_ID, log, success, plugin_tag):
+def writeRowsToSheetToRemoveUser(credentials, SPREADSHEET_ID, log, success, plugin_tag):
 
     global newLine
-    credentials = getCredentials()
+  #  credentials = getCredentials()
     service = getService(credentials)
     now = datetime.datetime.now()
     rangeRow = 'A'+str(newLine)+':W1000'
@@ -220,9 +219,9 @@ def writeRowsToSheetToRemoveUser(SPREADSHEET_ID, log, success, plugin_tag):
 
 
 #creates a google spreadsheet with the header, user name and email and column names
-def initialize(email, configMap, arg):
+def initialize(email, credentials, configMap, arg):
 
-    credentials = getCredentials()
+   # credentials = getCredentials()
     service = getService(credentials)
     if service is None:
         return None
@@ -296,27 +295,29 @@ def getService(creds):
 
     return service
 
-def getCredentials():
-   # CLIENT_SECRETS_FILE = "\client_secrets.json"
+# def getCredentials():
+#    # CLIENT_SECRETS_FILE = "\client_secrets.json"
+#
+#     # Full, permissive scope to access all of a user's files
+#     SCOPES = 'https://www.googleapis.com/auth/drive'
+#     store = file.Storage('project/credentials.json')
+#     creds = store.get()
+#     if not creds or creds.invalid:
+#         try:
+#             flow = client.flow_from_clientsecrets("client_secret.json", SCOPES)
+#             flags = tools.argparser.parse_args(args=['--noauth_local_webserver'])
+#             #flags = tools.argparser.parse_args(args=[])
+#             creds = tools.run_flow(flow, store, flags)
+#
+#         except clientsecrets.InvalidClientSecretsError:
+#             print('The client secrets were missing or invalid: ')
+#         except client.UnknownClientSecretsFlowError:
+#             print('This OAuth 2.0 flow is unsupported')
+#         except client.Error:
+#             print('Unexpected Error')
+#
+#     return creds
 
-    # Full, permissive scope to access all of a user's files
-    SCOPES = 'https://www.googleapis.com/auth/drive'
-    store = file.Storage('project/credentials.json')
-    creds = store.get()
-    if not creds or creds.invalid:
-        try:
-            flow = client.flow_from_clientsecrets("project/client_secret.json", SCOPES)
-            flags = tools.argparser.parse_args(args=[])
-            creds = tools.run_flow(flow, store, flags)
-
-        except clientsecrets.InvalidClientSecretsError:
-            print('The client secrets were missing or invalid: ')
-        except client.UnknownClientSecretsFlowError:
-            print('This OAuth 2.0 flow is unsupported')
-        except client.Error:
-            print('Unexpected Error')
-
-    return creds
 
 #this function will search through every row in the list and return a value if it is equal to the value of a first cell
 def findSpecificEntryInAllRows(service, SPREADSHEET_ID, searchValue):
