@@ -1,7 +1,7 @@
 import ast
 import imp,os
 
-pluginFolder = "./project/plugins"
+pluginFolder = "./plugins"
 mainFile = "__init__"
 
 
