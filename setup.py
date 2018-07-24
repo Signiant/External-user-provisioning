@@ -19,6 +19,3 @@ setup(name='uptool',
                ]
       }
 )
-
-# upload to pypi wiht twine
-# https://pypi.org/project/twine/
