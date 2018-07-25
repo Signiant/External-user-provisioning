@@ -20,33 +20,6 @@ The tool is built using a plugin model so adding new services that have an API s
 
 The User Provisioning Tool is a command line tool that accepts a path to the config file, the new user's email, the services to be run and custom permissions or groups for each service. The tool sends an email notifying the new user that emails from various services have been sent to them or by providing them with a link to a service that prompts them to activate their organization account.
 
-## Run from Docker
-
-The easiest way to run the tool is to run it from Docker:
-
-1. Pull the Docker image using the command:
-
-_docker pull signiant/external-user-provisioning_
-
-2. Build the docker container in the interactive mode:
-
-_docker run -it -v [link to your config.yaml file stored locally]/config.yaml:/config.yaml signiant/external-user-provisioning -v [link to your client_secret.json file stored locally]/client_secret.json:/client_secret.json signiant/external-user-provisioning_
-
-3. Run the container using your parameters (-n, -c, -e, -p/-r) in the bash shell:
-
-_uptool -n "Test User" -c "/config.yaml" -e test@email.com -p all_
-
-4. Copy the authentication link and paste it into your browser.
-
-5. Follow the authentication steps until you see verification code. Copy it and paste into the bash shell.
-
-In this example, we use a bindmount to mount in the config.yaml file and client_secret.json file from a local folder to the root directory of the container.
-
-If you want to run the same docker container again, you can type the command:
-
-_docker start [container name]_
-
-
 ## Example
 
 The following command creates:
@@ -57,6 +30,7 @@ The following command creates:
 ```bash
 python3 user_provision.py
     -c "/External-user-provisioning-new/config-file/config.yaml" \
+    -s "/External-user-provisioning-new/credentials/client_secret.json" \
     -e test@gmail.com \
     -n "Full Name" \
     -p bitbucket:prod,aws:dev2,papertrail:dev \
@@ -64,7 +38,8 @@ python3 user_provision.py
 ```
 
 ### Required
-* -c : a file path to your config file
+* -c : a file path to your config.yaml file
+* -s : a file path to your client_secret.json file
 * -e : the email of the new user you will be adding/removing
 * -p or -r : name of the services to create accounts in separated by semicolons (-p to add, -r to remove)
 * -n : new user's full name
@@ -72,11 +47,27 @@ python3 user_provision.py
 ### Optional
 * -l : plugins delimited and separated by semicolons with the plugin name as the first field.
 
+
 ## Sample Notification Email
 ![Sample Email](https://raw.githubusercontent.com/Signiant/External-user-provisioning/master/project/samples/sample-email.png)
 
 
-## Installing the Tool
+## Installing & Running the Uptool Using PyPi
+
+The easiest way to run the tool is by using a pre build package (pypi).
+
+1  _xcode-select --install_
+2  _ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"_
+3  _brew install python3_
+4  _sudo -H pip3 install uptool_
+5. _uptool -n "Test User" -c "/full_path_to_your_config_file/config.yaml" -s "/full_path_to_your_client_secret_file/client_secret.json" -e test@mail.com -p all_
+6.  Copy the authentication link and paste it into your browser.
+7. Follow the authentication steps until you see a verification code. Paste it into the bash shell.
+
+
+## Installing & Running the Uptool Using Github
+
+If you prefer to use this way to run the tool, you have to install all the required dependencies
 
 1. Install python 3 or higher
 2. Clone the repository at https://github.com/Signiant/External-user-provisioning
@@ -167,3 +158,5 @@ In order for the tool to get authorization to Google drive, you must follow thes
     - In the method writeRowsToSheetToAddUser(SPREADSHEET_ID, email, plugin_tag, log, success) add values for new columns in 'values1'
     - In the method writeRowsToSheetToRemoveUser(SPREADSHEET_ID, log, success, plugin_tag) add values for new columns in 'values1'.
     Make sure that the new values of array rowForThisPlugin[] are properly indexed after new values are added
+
+
