@@ -1,6 +1,7 @@
 from setuptools import find_packages
 from distutils.core import setup
 
+
 setup(name='uptool',
       version='1.0.6',
       description='The User Provisioning Tool (UP Tool) can add or remove users from multiple web services with desired permissions and notify new user. Useful when a service does not support single sign-on or the plan cost to get single sign-on is prohibitivly expensive',
