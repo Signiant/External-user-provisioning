@@ -1,7 +1,7 @@
 import ast
 import imp,os
 
-pluginFolder = "./plugins"
+pluginFolder = "plugins"
 mainFile = "__init__"
 
 
@@ -18,7 +18,7 @@ def getAllPlugins():
 
 def loadPlugin(pluginName):
     try:
-        return imp.load_source(pluginName, os.path.join(pluginFolder[1:], pluginName, mainFile + ".py"))
+        return imp.load_source(pluginName, os.path.join(pluginFolder, pluginName, mainFile + ".py"))
     except FileNotFoundError:
         return imp.load_source(pluginName, os.path.join(pluginFolder, pluginName, mainFile + ".py"))
 
