@@ -38,7 +38,7 @@ def getCredentials(path):
     # Full, permissive scope to access all of a user's files
     SCOPES = 'https://www.googleapis.com/auth/drive'
     # store = file.Storage('/tmp/credentials.json')
-    store = file.Storage('credentials.json')
+    store = file.Storage('/tmp/credentials.json')
     creds = store.get()
     if not creds or creds.invalid:
         try:
@@ -82,7 +82,7 @@ def main():
                         required=False)
     args = parser.parse_args()
 
-    logging.basicConfig(filename='log_' + args.email.split('@', 1)[0] + '.log', level=logging.INFO)
+    logging.basicConfig(filename='/tmp/log_' + args.email.split('@', 1)[0] + '.log', level=logging.INFO)
 
     configMap = readConfigFile(args.config)
 
