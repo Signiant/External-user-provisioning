@@ -9,9 +9,7 @@ if not os.path.isdir(pluginFolder):
     raise SystemExit
 else:
 
-    #pluginFolder = "plugins"
     mainFile = "__init__"
-
 
     def getAllPlugins():
         plugins = []
