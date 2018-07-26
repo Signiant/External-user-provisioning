@@ -5,9 +5,9 @@ import yaml
 import logging
 import imp
 
-# import azure
-# import msrestazure
-# import azure.graphrbac
+import azure
+import msrestazure
+import azure.graphrbac
 
 from oauth2client import file, client, tools
 from oauth2client import clientsecrets
