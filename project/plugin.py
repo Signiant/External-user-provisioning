@@ -1,66 +1,72 @@
 import ast
 import imp,os
+import site
 
-pluginFolder = "plugins"
-mainFile = "__init__"
+pluginFolder = site.getsitepackages()[0] +"/project/plugins"
 
+if not os.path.isdir(pluginFolder):
+    print("\nThe path to the plugin folder is incorrect")
+    raise SystemExit
+else:
 
-def getAllPlugins():
-    plugins = []
-    possibleplugins = os.listdir(pluginFolder)
-    for i in possibleplugins:
-        location = os.path.join(pluginFolder, i)
-        if not os.path.isdir(location) or not mainFile + ".py" in os.listdir(location):
-            continue
-        info = imp.find_module(mainFile, [location])
-        plugins.append({"name": i, "info": info})
-    return plugins
+    mainFile = "__init__"
 
-def loadPlugin(pluginName):
-    try:
-        return imp.load_source(pluginName, os.path.join(pluginFolder, pluginName, mainFile + ".py"))
-    except FileNotFoundError:
-        return imp.load_source(pluginName, os.path.join(pluginFolder, pluginName, mainFile + ".py"))
+    def getAllPlugins():
+        plugins = []
+        possibleplugins = os.listdir(pluginFolder)
+        for i in possibleplugins:
+            location = os.path.join(pluginFolder, i)
+            if not os.path.isdir(location) or not mainFile + ".py" in os.listdir(location):
+                continue
+            info = imp.find_module(mainFile, [location])
+            plugins.append({"name": i, "info": info})
+        return plugins
 
-def getApiToken(configMap,plugin_tag):
-    for plugin in configMap['plugins']:
-        if plugin['plugin']+':'+plugin['tag'] == plugin_tag:
-            return plugin['ApiToken']
+    def loadPlugin(pluginName):
+        try:
+            return imp.load_source(pluginName, os.path.join(pluginFolder, pluginName, mainFile + ".py"))
+        except FileNotFoundError:
+            return imp.load_source(pluginName, os.path.join(pluginFolder, pluginName, mainFile + ".py"))
 
-def getUrl(configMap,plugin_tag):
-    for plugin in configMap['plugins']:
-        if plugin['plugin']+':'+plugin['tag'] == plugin_tag:
-            return plugin['url']
+    def getApiToken(configMap,plugin_tag):
+        for plugin in configMap['plugins']:
+            if plugin['plugin']+':'+plugin['tag'] == plugin_tag:
+                return plugin['ApiToken']
 
-def getPermissions(configMap, plugin_tag):
-    for plugin in configMap['plugins']:
-        if plugin['plugin']+':'+plugin['tag'] == plugin_tag:
-            return plugin['permission']
+    def getUrl(configMap,plugin_tag):
+        for plugin in configMap['plugins']:
+            if plugin['plugin']+':'+plugin['tag'] == plugin_tag:
+                return plugin['url']
 
-def getGroups(configMap,plugin_tag):
-    groupsList=[]
-    for plugin in configMap['plugins']:
-        if plugin['plugin']+':'+plugin['tag']==plugin_tag:
-            groupsList=plugin['permission']['groups']
+    def getPermissions(configMap, plugin_tag):
+        for plugin in configMap['plugins']:
+            if plugin['plugin']+':'+plugin['tag'] == plugin_tag:
+                return plugin['permission']
 
-    return groupsList
+    def getGroups(configMap,plugin_tag):
+        groupsList=[]
+        for plugin in configMap['plugins']:
+            if plugin['plugin']+':'+plugin['tag']==plugin_tag:
+                groupsList=plugin['permission']['groups']
 
-def inviteMessage(configMap,plugin_tag):
-    for plugin in configMap['plugins']:
-        if plugin['plugin']+':'+plugin['tag'] == plugin_tag:
-            return plugin['message_invite']
+        return groupsList
 
-def removalMessage(configMap,plugin_tag):
-    for plugin in configMap['plugins']:
-        if plugin['plugin']+':'+plugin['tag'] == plugin_tag:
-            return plugin['message_remove']
+    def inviteMessage(configMap,plugin_tag):
+        for plugin in configMap['plugins']:
+            if plugin['plugin']+':'+plugin['tag'] == plugin_tag:
+                return plugin['message_invite']
 
-def getCLIgroups(configMap, plugin_tag, allPermissions):
-    cli_groups = []
-    for permission in allPermissions:
-        thisPermissions = ast.literal_eval(permission)
-        if thisPermissions['plugin'] == plugin_tag:
-            del thisPermissions['plugin']
-            return list(thisPermissions.values())
-    if len(cli_groups) == 0:
-        return getGroups(configMap, plugin_tag)
+    def removalMessage(configMap,plugin_tag):
+        for plugin in configMap['plugins']:
+            if plugin['plugin']+':'+plugin['tag'] == plugin_tag:
+                return plugin['message_remove']
+
+    def getCLIgroups(configMap, plugin_tag, allPermissions):
+        cli_groups = []
+        for permission in allPermissions:
+            thisPermissions = ast.literal_eval(permission)
+            if thisPermissions['plugin'] == plugin_tag:
+                del thisPermissions['plugin']
+                return list(thisPermissions.values())
+        if len(cli_groups) == 0:
+            return getGroups(configMap, plugin_tag)
