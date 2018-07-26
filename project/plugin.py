@@ -5,7 +5,7 @@ import site
 pluginFolder = site.getsitepackages()[0] +"/project/plugins"
 
 if not os.path.isdir(pluginFolder):
-    print("\nThe path to the plugin folder is incorrect")
+    print("\nThe path to the plugin folder is incorrect: " + site.getsitepackages()[0] +"/project/plugins")
     raise SystemExit
 else:
 
