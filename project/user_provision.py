@@ -8,6 +8,7 @@ import imp
 import azure
 import msrestazure
 import azure.graphrbac
+import azure.common
 
 from oauth2client import file, client, tools
 from oauth2client import clientsecrets
@@ -29,8 +30,7 @@ def readConfigFile(path):
         configMap = yaml.load(config_file_handle)
         config_file_handle.close()
     except:
-        print
-        "Error: Unable to open config file %s or invalid yaml" % path
+        print("Error: Unable to open config file %s or invalid yaml" % path)
     return configMap
 
 def getCredentials(path):
