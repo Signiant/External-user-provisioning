@@ -22,7 +22,6 @@ def writeHeaderColumnNamesToSheet(SPREADSHEET_ID, service, email, configMap):
             '\n'
             'The following systems require action taken when a new hire is onboarded or when there is an employee exit.  Please clone per new hire or exit.\n',
             "If you want to add more columns into the table, please, follow the instructions in the README.md file https://github.com/Signiant/External-user-provisioning\n",
-            "ROLE: Product Marketing Manager",
             "Email:  " + email,
             "AD Login:  " + email.split('@', 1)[0],
             "\n",
