@@ -95,6 +95,12 @@ plugins:
 
   - tag: "dev1"
     plugin: "azure"
+            # Tenant ID for your Azure Subscription
+    tenant_id: "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+        # Your Service Principal App ID
+    client: "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+        # Your Service Principal Password
+    client_secret: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     email: '.onmicrosoft.com'
     password: 'xxxxx'
     directory: '.onmicrosoft.com'
