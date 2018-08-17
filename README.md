@@ -125,7 +125,7 @@ The tool will create a Google spreadsheet for every user with information on the
 
 
 #### OAuth2 Credentials required to access Google Drive and Sheets
-In order for the tool to get authorization to Google drive, you must follow these steps to obtain oAuth credentials and place a file in the correct location before running the tool.
+In order for the tool to get authorization to Google drive, you must follow these steps to obtain oAuth credentials and place the values into you config.yaml file.
 
 1. Log in into your google account at https://console.developers.google.com
 2. From the project drop-down, choose Create a new project, enter a name for the project, and optionally, edit the provided project ID. Click Create.
@@ -140,6 +140,23 @@ In order for the tool to get authorization to Google drive, you must follow thes
 11. Press _OK_ to close the pop up window
 12. Click on the download arrow on the right from the client IDs created. This will download a json file 
 13. Move this json file to the _project_ subdirectory of the repo you have cloned and rename it to _client_secret.json_
+
+#### Client Id and Client Secret for a Microsoft Azure Active Directory
+In order for the tool to be able to work with Azure Active Directory, you must follow these steps to obtain Client ID, Client Secret and Tenant ID credentials and place the values into you config.yaml file.
+
+
+1. Sign in to the Azure portal.
+2. Click on More Services on the left hand side, and choose Azure Active Directory.
+3. Click on App registrations and choose Add.
+4. Enter a name for the application and select ‘Web Application and/or Web API’ as the Application Type. Enter the base URL (“http://your_app_name”), then click on the Create button.
+5. Click on Settings. Here you can see Client ID value.
+6. Click on the Keys option.
+7. When all the settings are saved, you will see the Client Secret.
+8. To get Tenant ID:
+    - Navigate to Dashboard
+    - Navigate to ActiveDirectory
+    - Navigate to Manage / Properties
+    - Copy the "Directory ID"
 
 
 ### Additional Information
