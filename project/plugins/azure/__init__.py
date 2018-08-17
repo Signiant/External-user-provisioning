@@ -131,31 +131,19 @@ def removeUser(email,configMap,allPermissions, plugin_tag):
             cont = True
             break
 
-    # remove this part when you uncomment deletion of a user
     if cont:
+        try:
+            graphrbac_client.users.delete(userID)
+            done = True
 
-        done = True
-        log = "user " + userName + " exists in Azure portal. Please, remove the user manually"
-        instruction = log
-    
-    # to delete a user uncomment this code
-    # and follow the instructions on how to grant the permision here:
-    # https: // stackoverflow.com / questions / 42819826 / azure - ad - application -
-    # with-global -administrator-rights
-    #
-    # if cont:
-    #     try:
-    #         graphrbac_client.users.delete(userID)
-    #         done = True
-    #
-    #     except GraphErrorException as e:
-    #         log = "User " + userName + " could not be removed: " + str(e)
-    #         instruction = log
-    #         print(log)
-    #     except:
-    #         log = 'error: Azure: failed to remove ' + userName + ', unexpected error'
-    #         instruction = log
-    #         print(log)
+        except GraphErrorException as e:
+            log = "User " + userName + " could not be removed: " + str(e)
+            instruction = log
+            print(log)
+        except:
+            log = 'error: Azure: failed to remove ' + userName + ', unexpected error'
+            instruction = log
+            print(log)
     else:
         log = "user " + userName + " is not in the group or does not exist at all. Could not be removed"
         instruction = log
