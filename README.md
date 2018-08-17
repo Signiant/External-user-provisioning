@@ -59,7 +59,7 @@ The easiest way to run the tool is by using a pre build package (pypi).
 1.  _xcode-select --install_
 2.  _ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"_
 3.  _brew install python3_
-4.  _sudo -H pip3 install uptool_
+4.  _sudo -H pip3 install --upgrade uptool_
 5.  _uptool -n "Test User" -c "/full_path_to_your_config_file/config.yaml" -s "/full_path_to_your_client_secret_file/client_secret.json" -e test@mail.com -p all_
 6. Copy the authentication link and paste it into your browser.
 7. Follow the authentication steps until you see a verification code. Paste it into the bash shell.
